@@ -15,9 +15,9 @@ Verified on October 12, 2026 in the supplied development environment.
   and cross-platform SVG action icons.
 
 Checks were run against the exact static deployment output in `dist/`. The
-GitHub Actions workflow is prepared but has not run: the GitHub integration
-could not create new remote repositories. Cloudflare deployment has not been
-performed. Booking and property transactions remain with existing external
+GitHub Actions workflow repeats the static build on pushes and pull requests;
+check the repository's Actions tab for its latest result. Cloudflare deployment
+has not been performed. Booking and property transactions remain with existing external
 providers; verification did not create reservations or contact the business.
 
 The browser labels check is a targeted implementation check, not a complete

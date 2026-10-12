@@ -31,7 +31,7 @@ workflow runs the build and retains the static output as an artifact.
 
 Connect this GitHub repository through **Workers & Pages → Create application →
 Pages → Connect to Git** (dashboard wording may vary). Grant the Cloudflare GitHub
-app access to this private repository.
+app access to this repository.
 
 | Setting | Value |
 | --- | --- |
