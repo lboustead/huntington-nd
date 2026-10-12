@@ -10,7 +10,7 @@ Reviewed the existing public website at <https://huntingtonnd.com/> on October 1
 - Free consultation is offered on the original site.
 - Address: 4521 Ottawa Street, Suite 200, Bismarck, ND 58503, United States.
 - Email: <builders@huntingtonnd.com>.
-- Telephone: +1 701 314 2346.
+- Telephone: +1 701 471 4673.
 - Facebook: <https://www.facebook.com/HuntingtonBuilders>.
 - Instagram: <https://www.instagram.com/huntington.builders/>.
 
@@ -22,11 +22,11 @@ The original section titled “Lots & Spec Homes Available” embeds the followi
 
 <https://www.google.com/maps/d/embed?mid=1II6unIVWoHVxY8v64Ezl2_JluJmNyAY&ehbc=2E312F&noprof=1>
 
-The redesign links directly to the same published map using its Google My Maps viewer URL:
+The redesign embeds that published Google My Maps map and retains its viewer URL as a fallback link:
 
 <https://www.google.com/maps/d/viewer?mid=1II6unIVWoHVxY8v64Ezl2_JluJmNyAY>
 
-The original page does not expose individual lot or spec home addresses, prices, sales status or listing links in its HTML. The redesign does not assert any particular property is currently available. It asks visitors to confirm availability directly. The residential photograph alongside this section is completed-project photography, explicitly identified as inspiration rather than available inventory.
+The original page does not expose individual lot or spec home addresses, prices, sales status or listing links in its HTML. The redesign does not assert any particular property is currently available. It asks visitors to confirm availability directly.
 
 ## Locally hosted photographs
 
