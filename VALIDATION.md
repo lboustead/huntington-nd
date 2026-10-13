@@ -1,8 +1,36 @@
 # Validation record
 
-Latest verification: October 13, 2026 in the supplied development environment. Earlier validation records follow.
+Latest verification: October 13, 2026 in the supplied development environment.
 
-## Large centered logo and visible scroll movement
+## Current light homepage refresh
+
+- The source and generated-output static build checks pass for both HTML pages.
+- All 26 final browser checks pass at 1440, 768, 390 and 320 pixels wide,
+  covering navigation, hero photos, gallery filters/expansion, keyboard photo
+  viewing and focus restoration, native details, reduced motion, JavaScript
+  fallback, asset loading and horizontal overflow.
+- A separate smoke check of the generated site passes homepage/custom404, hero
+  photo changes, exterior filtering, the dialog and focus return, and the initial
+  map panel. Generated HTML, CSS and JavaScript match the source files.
+- The current design uses a stable, small header logo, a split hero and three
+  targeted reveals. The earlier moving-logo and parallax checks below describe
+  previous designs and do not establish behavior of the current homepage.
+- The original photographs and company contact details remain in place. This
+  refresh added no application dependencies and performed no deployment.
+
+The map panel makes no Google Maps request before activation. Its load action
+sets the original embed URL, displays the iframe, hides the placeholder and
+retains the external viewer link. The load UI was checked with a mocked response;
+Google's live service could not be validated because the environment proxy
+blocks the embed request. This is an external validation limit, not a passing
+live-map test. JavaScript syntax and Git whitespace checks also pass.
+
+## Historical design verification
+
+The following records apply to earlier designs. Keep them as history, rather
+than as requirements or results for the current homepage.
+
+### Large centered logo and visible scroll movement — October 13, 2026
 
 - Browser checks passed across 11 layouts, including 1920, 1600, 1440, 1226, 600, 390, and 320 pixels wide and a short 390 × 568 viewport. The logo starts at 260 pixels on desktop, centered over the left hero panel, or 180 pixels centered below the mobile navbar. Halfway scrolling produces intermediate sizes of 179 and 131 pixels with the corresponding translation; full docking produces 98 and 82 pixels. Header heights remain 106 and 91 pixels.
 - The initial badge stays clear of the eyebrow and navigation, and the main action stays above the hero controls. No horizontal overflow or circular-logo collisions were observed. Real mouse/Enter menu activation compacts the badge, while Escape restores its correct top or intermediate scroll position after the scheduled frame.

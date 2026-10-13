@@ -52,7 +52,16 @@ handoff checklist.
 
 ## Editing
 
-The visual direction and online references are documented in [DESIGN-NOTES.md](DESIGN-NOTES.md). The homepage includes a manually browsable hero, scroll reveals, gallery filters, a keyboard-operated photo viewer, and expandable introduction sections. Motion respects the visitor's reduced-motion setting, and core content and links work without JavaScript.
+The palette, type, layout and interaction details are documented in
+[DESIGN-NOTES.md](DESIGN-NOTES.md). The homepage combines a spacious split hero,
+original project photography and a small, easily replaceable logo. It includes
+three manually browsable hero photos, three targeted once-only reveals, gallery
+filters, a keyboard-operated photo viewer and native expandable introduction
+steps. The lots-and-homes card loads Google Maps on request and retains an
+external viewer link; without JavaScript, the embedded map remains available.
+Motion respects the visitor's reduced-motion setting and can be toggled in the
+footer. Core content and links work without JavaScript. The refresh adds no
+application dependencies or deployment changes.
 
 - `index.html`: copy, section order, contact details, links, and metadata.
 - `assets/`: styles, browser interactions, photos, icons, and local fonts.

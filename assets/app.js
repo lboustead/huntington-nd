@@ -1,221 +1,112 @@
 (() => {
   'use strict';
   const root = document.documentElement;
-  root.classList.add('js');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const mobile = window.matchMedia('(max-width: 900px)');
   let motionOverride = null;
   const motionReduced = () => motionOverride === null ? reducedMotion.matches : !motionOverride;
   root.classList.toggle('motion-paused', motionReduced());
-  const mobile = window.matchMedia('(max-width: 900px)');
+  root.classList.add('js');
+  const header = document.querySelector('.site-header');
+  const progress = document.querySelector('.scroll-progress');
+  let scrollFrame = 0;
+  const updateScroll = () => {
+    scrollFrame = 0;
+    const scrollTop = Math.max(0, window.scrollY);
+    if (header) header.classList.toggle('is-scrolled', scrollTop > 24);
+    if (progress) progress.style.transform = `scaleX(${Math.min(1, scrollTop / Math.max(1, root.scrollHeight - window.innerHeight))})`;
+  };
+  const scheduleScroll = () => {
+    if (!scrollFrame) scrollFrame = window.requestAnimationFrame(updateScroll);
+  };
+  window.addEventListener('scroll', scheduleScroll, { passive: true });
+  window.addEventListener('resize', scheduleScroll, { passive: true });
+  window.addEventListener('load', scheduleScroll, { once: true });
+  updateScroll();
+
   const revealElements = Array.from(document.querySelectorAll('[data-reveal]'));
   let revealObserver = null;
   const observeReveals = (elements = revealElements) => {
     if (!revealObserver) return;
-    elements.forEach((element) => {
-      if (element.hidden || element.classList.contains('is-visible')) return;
-      // Re-observe cards after a filter changes their display state.
+    for (const element of elements) {
+      if (!element.hasAttribute('data-reveal') || element.hidden || element.classList.contains('is-visible')) continue;
       revealObserver.unobserve(element);
       revealObserver.observe(element);
-    });
+    }
   };
   const configureMotion = () => {
     if (revealObserver) revealObserver.disconnect();
     revealObserver = null;
     if (motionReduced() || !('IntersectionObserver' in window)) {
       root.classList.remove('motion-ready');
-      revealElements.forEach((element) => element.classList.add('is-visible'));
+      for (const element of revealElements) element.classList.add('is-visible');
       return;
     }
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting || entry.target.hidden) return;
+    revealObserver = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting || entry.target.hidden) continue;
         entry.target.classList.add('is-visible');
-        observer.unobserve(entry.target);
-      });
-    }, { rootMargin: '0px 0px -35px 0px', threshold: 0.08 });
-    revealObserver = observer;
+        revealObserver.unobserve(entry.target);
+      }
+    }, { rootMargin: '0px 0px -20px 0px', threshold: 0.08 });
     root.classList.add('motion-ready');
     observeReveals();
   };
 
-  const header = document.querySelector('.site-header');
-  const progress = document.querySelector('.scroll-progress');
   const heroImage = document.querySelector('.hero-image');
-  const brand = header && header.querySelector('.brand-scroll');
-  const heroContent = document.querySelector('.hero-content');
-  const measureBrandGeometry = () => {
-    if (!header || !brand) return;
-    const bounds = header.getBoundingClientRect();
-    const padding = parseFloat(window.getComputedStyle(header).paddingLeft);
-    const baseWidth = brand.offsetWidth;
-    if (!baseWidth) return;
-    const targetSize = mobile.matches ? 180 : 260;
-    const contentLeft = heroContent ? heroContent.getBoundingClientRect().left : bounds.left + padding;
-    const centerX = mobile.matches ? window.innerWidth / 2 : (contentLeft + window.innerWidth * 0.3) / 2;
-    const centerY = (mobile.matches ? 104 : 12) + targetSize / 2;
-    const baseCenterX = bounds.left + padding + baseWidth / 2;
-    const baseCenterY = bounds.top + header.offsetHeight / 2;
-    brand.style.setProperty('--brand-scale', String(targetSize / baseWidth));
-    brand.style.setProperty('--brand-x', `${(centerX - baseCenterX).toFixed(2)}px`);
-    brand.style.setProperty('--brand-y', `${(centerY - baseCenterY).toFixed(2)}px`);
-  };
-  const scrollEffects = Array.from(document.querySelectorAll('[data-scroll-motion], [data-scroll-rotate]')).map((element) => ({
-    element,
-    anchor: element.closest('[data-scroll-anchor]') || element.parentElement,
-    shift: Math.max(-60, Math.min(60, Number(element.dataset.scrollMotion) || 0)),
-    rotation: Math.max(-90, Math.min(90, Number(element.dataset.scrollRotate) || 0))
-  }));
-  let heroAnimation = null;
-  let heroTransition = 0;
-  const cancelHeroTransition = () => {
-    heroTransition += 1;
-    if (heroAnimation) {
-      heroAnimation.cancel();
-      heroAnimation = null;
-    }
-    return heroTransition;
-  };
-  const animateHeroImage = async (transition) => {
-    if (!heroImage || motionReduced() || typeof heroImage.animate !== 'function') return;
-    try {
-      if (typeof heroImage.decode === 'function') {
-        await heroImage.decode();
-      } else if (!heroImage.complete) {
-        await new Promise((resolve, reject) => {
-          const cleanup = () => {
-            heroImage.removeEventListener('load', loaded);
-            heroImage.removeEventListener('error', failed);
-          };
-          const loaded = () => { cleanup(); resolve(); };
-          const failed = () => { cleanup(); reject(new Error('Hero image could not load.')); };
-          heroImage.addEventListener('load', loaded, { once: true });
-          heroImage.addEventListener('error', failed, { once: true });
-        });
-      }
-      if (transition !== heroTransition || motionReduced() || !heroImage.naturalWidth) return;
-      // Only animate opacity so the scroll-driven image position stays intact.
-      const animation = heroImage.animate([{ opacity: 0.4 }, { opacity: 1 }], {
-        duration: 620,
-        easing: 'cubic-bezier(.22, 1, .36, 1)'
-      });
-      heroAnimation = animation;
-      animation.addEventListener('finish', () => {
-        if (heroAnimation === animation) heroAnimation = null;
-      }, { once: true });
-    } catch {
-      // A canceled decode or failed image must not interrupt the controls.
-    }
-  };
-  let scrollFrame = 0;
-  const updateScroll = () => {
-    scrollFrame = 0;
-    const scrollTop = Math.max(0, window.scrollY);
-    const viewportHeight = window.innerHeight;
-    const scrollRange = progress ? Math.max(1, root.scrollHeight - viewportHeight) : 1;
-    const reduced = motionReduced();
-    const anchorBounds = new Map();
-    const effectUpdates = [];
-    // Read stable frames together before any animated styles are written.
-    scrollEffects.forEach((effect) => {
-      if (reduced) {
-        effectUpdates.push({ effect, shift: 0, rotation: 0 });
-        return;
-      }
-      if (!effect.anchor || effect.element.closest('[hidden]')) return;
-      if (!anchorBounds.has(effect.anchor)) anchorBounds.set(effect.anchor, effect.anchor.getBoundingClientRect());
-      const bounds = anchorBounds.get(effect.anchor);
-      if (!bounds.height || bounds.bottom < -160 || bounds.top > viewportHeight + 160) return;
-      const position = Math.max(0, Math.min(1, (viewportHeight - bounds.top) / (viewportHeight + bounds.height)));
-      effectUpdates.push({ effect, shift: (position - 0.5) * 2 * effect.shift, rotation: position * effect.rotation });
-    });
-    if (header) {
-      header.classList.toggle('is-scrolled', scrollTop > 40);
-      const dockDistance = mobile.matches ? 180 : 200;
-      const brandProgress = header.classList.contains('is-menu-open') ? 1
-        : reduced ? Number(scrollTop > 40) : Math.min(1, scrollTop / dockDistance);
-      header.style.setProperty('--brand-progress', String(brandProgress));
-    }
-    if (progress) progress.style.transform = `scaleX(${Math.min(1, scrollTop / scrollRange)})`;
-    if (heroImage) {
-      const shift = reduced || mobile.matches ? 0 : Math.min(50, scrollTop * 0.08);
-      heroImage.style.setProperty('--hero-shift', `${shift}px`);
-    }
-    effectUpdates.forEach(({ effect, shift, rotation }) => {
-      effect.element.style.setProperty('--scroll-shift', `${shift.toFixed(2)}px`);
-      effect.element.style.setProperty('--scroll-rotate', `${rotation.toFixed(2)}deg`);
-    });
-  };
-  const scheduleScroll = () => {
-    if (!scrollFrame) scrollFrame = window.requestAnimationFrame(updateScroll);
-  };
-  window.addEventListener('scroll', scheduleScroll, { passive: true });
-  window.addEventListener('resize', () => {
-    measureBrandGeometry();
-    scheduleScroll();
-  }, { passive: true });
-  window.addEventListener('load', () => {
-    measureBrandGeometry();
-    scheduleScroll();
-  }, { once: true });
-  reducedMotion.addEventListener('change', () => syncMotion());
-  mobile.addEventListener('change', scheduleScroll);
-  measureBrandGeometry();
-  configureMotion();
-  updateScroll();
-
   const heroSlides = [
-    {
-      src: '/assets/home-living.jpg',
-      alt: 'A bright living room with timber beams, a stone fireplace and warm wood floors.',
-      caption: 'Spaces to gather.'
-    },
-    {
-      src: '/assets/home-kitchen.jpg',
-      alt: 'A Huntington Builders kitchen with white cabinets, a wood island, black fixtures and an adjoining dining area.',
-      caption: 'Details to make your own.'
-    },
-    {
-      src: '/assets/project-11.jpg',
-      alt: 'A house with a stone facade, timber accents and a landscaped front yard.',
-      caption: 'A place to come home.'
-    }
+    { src: '/assets/home-living.jpg', alt: 'A bright living room with timber beams, a stone fireplace and warm wood floors.', caption: 'Spaces to gather.' },
+    { src: '/assets/home-kitchen.jpg', alt: 'A Huntington Builders kitchen with white cabinets, a wood island, black fixtures and an adjoining dining area.', caption: 'Details to make your own.' },
+    { src: '/assets/project-11.jpg', alt: 'A house with a stone facade, timber accents and a landscaped front yard.', caption: 'A place to come home.' }
   ];
   const heroButtons = Array.from(document.querySelectorAll('[data-hero-slide]'));
   const heroCaption = document.querySelector('.hero-image-caption');
   const heroCounter = document.querySelector('.hero-image-counter');
   const heroAnnouncement = document.querySelector('#hero-announcement');
   let heroIndex = 0;
-  const showHeroSlide = (index, announce = true) => {
+  let heroVisibleIndex = 0;
+  let heroAnimation = null;
+  let heroTransition = 0;
+  const stopHeroAnimation = () => {
+    if (heroAnimation) heroAnimation.cancel();
+    heroAnimation = null;
+  };
+  const cancelHeroTransition = () => {
+    heroTransition += 1;
+    stopHeroAnimation();
+  };
+  const showHeroSlide = async (index) => {
     if (!heroImage) return;
-    const nextIndex = (index + heroSlides.length) % heroSlides.length;
-    const animate = announce && nextIndex !== heroIndex;
-    const transition = cancelHeroTransition();
-    heroIndex = nextIndex;
-    const slide = heroSlides[heroIndex];
+    const next = (index + heroSlides.length) % heroSlides.length;
+    if (next === heroIndex) return;
+    heroIndex = next;
+    cancelHeroTransition();
+    const transition = heroTransition;
+    const slide = heroSlides[next];
+    const incoming = new Image();
+    incoming.src = slide.src;
+    try { await incoming.decode(); } catch {
+      if (transition === heroTransition) heroIndex = heroVisibleIndex;
+      return;
+    }
+    if (transition !== heroTransition) return;
+    heroVisibleIndex = next;
     heroImage.src = slide.src;
     heroImage.alt = slide.alt;
-    if (heroCaption) heroCaption.textContent = slide.caption;
-    if (heroCounter) heroCounter.textContent = `${String(heroIndex + 1).padStart(2, '0')} / ${String(heroSlides.length).padStart(2, '0')}`;
-    heroButtons.forEach((button) => {
-      const active = Number(button.dataset.heroSlide) === heroIndex;
-      button.classList.toggle('active', active);
-      button.setAttribute('aria-pressed', String(active));
-    });
-    if (heroAnnouncement && announce) heroAnnouncement.textContent = `${slide.caption} Photo ${heroIndex + 1} of ${heroSlides.length}.`;
-    if (animate) animateHeroImage(transition);
+    heroCaption.textContent = slide.caption;
+    heroCounter.textContent = `${String(next + 1).padStart(2, '0')} / 03`;
+    for (const button of heroButtons) button.setAttribute('aria-pressed', String(Number(button.dataset.heroSlide) === next));
+    heroAnnouncement.textContent = `${slide.caption} Photo ${next + 1} of ${heroSlides.length}.`;
+    if (!motionReduced() && typeof heroImage.animate === 'function') {
+      heroAnimation = heroImage.animate([{ opacity: 0.45 }, { opacity: 1 }], { duration: 350, easing: 'ease-out' });
+    }
   };
   if (heroImage) {
-    document.querySelectorAll('[data-hero-controls], .hero-controls').forEach((controls) => { controls.hidden = false; });
-    heroButtons.forEach((button) => {
-      button.addEventListener('click', () => showHeroSlide(Number(button.dataset.heroSlide)));
-    });
-    const heroPrev = document.querySelector('[data-hero-prev]');
-    const heroNext = document.querySelector('[data-hero-next]');
-    if (heroPrev) heroPrev.addEventListener('click', () => showHeroSlide(heroIndex - 1));
-    if (heroNext) heroNext.addEventListener('click', () => showHeroSlide(heroIndex + 1));
-    showHeroSlide(0, false);
+    document.querySelector('[data-hero-controls]').hidden = false;
+    for (const button of heroButtons) button.addEventListener('click', () => showHeroSlide(Number(button.dataset.heroSlide)));
+    document.querySelector('[data-hero-prev]').addEventListener('click', () => showHeroSlide(heroIndex - 1));
+    document.querySelector('[data-hero-next]').addEventListener('click', () => showHeroSlide(heroIndex + 1));
   }
-
   const processAccordions = [];
   document.querySelectorAll('.process-steps details').forEach((details) => {
     const summary = details.querySelector('summary');
@@ -295,10 +186,13 @@
   const setMenu = (open, returnFocus = false) => {
     toggle.setAttribute('aria-expanded', String(open));
     nav.classList.toggle('open', open);
+    nav.inert = mobile.matches && !open;
+    nav.setAttribute('aria-hidden', String(mobile.matches && !open));
     if (header) header.classList.toggle('is-menu-open', open);
     scheduleScroll();
     if (returnFocus) toggle.focus();
   };
+  setMenu(false);
   toggle.addEventListener('click', () => setMenu(toggle.getAttribute('aria-expanded') !== 'true'));
   nav.addEventListener('click', (event) => {
     if (event.target.closest('a')) setMenu(false);
@@ -400,6 +294,22 @@
       if (opener) opener.focus();
     });
   }
+  const mapFrame = document.querySelector('.availability-map iframe');
+  const mapPlaceholder = document.querySelector('.map-placeholder');
+  const mapLoad = document.querySelector('#map-load');
+  if (mapFrame && mapPlaceholder && mapLoad) {
+    const mapSource = mapFrame.getAttribute('src');
+    mapFrame.removeAttribute('src');
+    mapFrame.hidden = true;
+    mapPlaceholder.hidden = false;
+    mapLoad.addEventListener('click', () => {
+      mapFrame.src = mapSource;
+      mapFrame.hidden = false;
+      mapPlaceholder.hidden = true;
+      mapFrame.focus();
+    }, { once: true });
+  }
+
   const motionToggle = document.querySelector('#motion-toggle');
   const motionToggleLabel = document.querySelector('#motion-toggle-label');
   const syncMotion = () => {
@@ -416,7 +326,7 @@
       motionToggleLabel.hidden = false;
       motionToggleLabel.textContent = `Motion ${enabled ? 'on' : 'off'}`;
     }
-    cancelHeroTransition();
+    stopHeroAnimation();
     settleProcessAccordions();
     configureMotion();
     scheduleScroll();
@@ -427,6 +337,7 @@
       syncMotion();
     });
   }
+  reducedMotion.addEventListener('change', syncMotion);
   syncMotion();
   document.querySelector('#copyright-year').textContent = String(new Date().getFullYear());
 })();
