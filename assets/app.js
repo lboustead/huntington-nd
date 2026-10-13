@@ -3,6 +3,9 @@
   const root = document.documentElement;
   root.classList.add('js');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let motionOverride = null;
+  const motionReduced = () => motionOverride === null ? reducedMotion.matches : !motionOverride;
+  root.classList.toggle('motion-paused', motionReduced());
   const mobile = window.matchMedia('(max-width: 900px)');
   const revealElements = Array.from(document.querySelectorAll('[data-reveal]'));
   let revealObserver = null;
@@ -18,7 +21,7 @@
   const configureMotion = () => {
     if (revealObserver) revealObserver.disconnect();
     revealObserver = null;
-    if (reducedMotion.matches || !('IntersectionObserver' in window)) {
+    if (motionReduced() || !('IntersectionObserver' in window)) {
       root.classList.remove('motion-ready');
       revealElements.forEach((element) => element.classList.add('is-visible'));
       return;
@@ -38,10 +41,28 @@
   const header = document.querySelector('.site-header');
   const progress = document.querySelector('.scroll-progress');
   const heroImage = document.querySelector('.hero-image');
+  const brand = header && header.querySelector('.brand-scroll');
+  const heroContent = document.querySelector('.hero-content');
+  const measureBrandGeometry = () => {
+    if (!header || !brand) return;
+    const bounds = header.getBoundingClientRect();
+    const padding = parseFloat(window.getComputedStyle(header).paddingLeft);
+    const baseWidth = brand.offsetWidth;
+    if (!baseWidth) return;
+    const targetSize = mobile.matches ? 180 : 260;
+    const contentLeft = heroContent ? heroContent.getBoundingClientRect().left : bounds.left + padding;
+    const centerX = mobile.matches ? window.innerWidth / 2 : (contentLeft + window.innerWidth * 0.3) / 2;
+    const centerY = (mobile.matches ? 104 : 12) + targetSize / 2;
+    const baseCenterX = bounds.left + padding + baseWidth / 2;
+    const baseCenterY = bounds.top + header.offsetHeight / 2;
+    brand.style.setProperty('--brand-scale', String(targetSize / baseWidth));
+    brand.style.setProperty('--brand-x', `${(centerX - baseCenterX).toFixed(2)}px`);
+    brand.style.setProperty('--brand-y', `${(centerY - baseCenterY).toFixed(2)}px`);
+  };
   const scrollEffects = Array.from(document.querySelectorAll('[data-scroll-motion], [data-scroll-rotate]')).map((element) => ({
     element,
     anchor: element.closest('[data-scroll-anchor]') || element.parentElement,
-    shift: Math.max(-40, Math.min(40, Number(element.dataset.scrollMotion) || 0)),
+    shift: Math.max(-60, Math.min(60, Number(element.dataset.scrollMotion) || 0)),
     rotation: Math.max(-90, Math.min(90, Number(element.dataset.scrollRotate) || 0))
   }));
   let heroAnimation = null;
@@ -55,7 +76,7 @@
     return heroTransition;
   };
   const animateHeroImage = async (transition) => {
-    if (!heroImage || reducedMotion.matches || typeof heroImage.animate !== 'function') return;
+    if (!heroImage || motionReduced() || typeof heroImage.animate !== 'function') return;
     try {
       if (typeof heroImage.decode === 'function') {
         await heroImage.decode();
@@ -71,7 +92,7 @@
           heroImage.addEventListener('error', failed, { once: true });
         });
       }
-      if (transition !== heroTransition || reducedMotion.matches || !heroImage.naturalWidth) return;
+      if (transition !== heroTransition || motionReduced() || !heroImage.naturalWidth) return;
       // Only animate opacity so the scroll-driven image position stays intact.
       const animation = heroImage.animate([{ opacity: 0.4 }, { opacity: 1 }], {
         duration: 620,
@@ -91,7 +112,7 @@
     const scrollTop = Math.max(0, window.scrollY);
     const viewportHeight = window.innerHeight;
     const scrollRange = progress ? Math.max(1, root.scrollHeight - viewportHeight) : 1;
-    const reduced = reducedMotion.matches;
+    const reduced = motionReduced();
     const anchorBounds = new Map();
     const effectUpdates = [];
     // Read stable frames together before any animated styles are written.
@@ -109,8 +130,10 @@
     });
     if (header) {
       header.classList.toggle('is-scrolled', scrollTop > 40);
-      const dockDistance = mobile.matches ? 120 : 160;
-      header.style.setProperty('--brand-progress', String(reduced ? 1 : Math.min(1, scrollTop / dockDistance)));
+      const dockDistance = mobile.matches ? 180 : 200;
+      const brandProgress = header.classList.contains('is-menu-open') ? 1
+        : reduced ? Number(scrollTop > 40) : Math.min(1, scrollTop / dockDistance);
+      header.style.setProperty('--brand-progress', String(brandProgress));
     }
     if (progress) progress.style.transform = `scaleX(${Math.min(1, scrollTop / scrollRange)})`;
     if (heroImage) {
@@ -126,14 +149,17 @@
     if (!scrollFrame) scrollFrame = window.requestAnimationFrame(updateScroll);
   };
   window.addEventListener('scroll', scheduleScroll, { passive: true });
-  window.addEventListener('resize', scheduleScroll, { passive: true });
-  window.addEventListener('load', scheduleScroll, { once: true });
-  reducedMotion.addEventListener('change', () => {
-    cancelHeroTransition();
-    configureMotion();
+  window.addEventListener('resize', () => {
+    measureBrandGeometry();
     scheduleScroll();
-  });
+  }, { passive: true });
+  window.addEventListener('load', () => {
+    measureBrandGeometry();
+    scheduleScroll();
+  }, { once: true });
+  reducedMotion.addEventListener('change', () => syncMotion());
   mobile.addEventListener('change', scheduleScroll);
+  measureBrandGeometry();
   configureMotion();
   updateScroll();
 
@@ -211,7 +237,7 @@
     };
     const toggleDetails = (open) => {
       targetOpen = open;
-      if (reducedMotion.matches) {
+      if (motionReduced()) {
         settle();
         return;
       }
@@ -262,7 +288,6 @@
   });
   const settleProcessAccordions = () => processAccordions.forEach((accordion) => accordion.settle());
   window.addEventListener('resize', settleProcessAccordions, { passive: true });
-  reducedMotion.addEventListener('change', settleProcessAccordions);
 
   const toggle = document.querySelector('.menu-toggle');
   const nav = document.querySelector('.site-nav');
@@ -271,6 +296,7 @@
     toggle.setAttribute('aria-expanded', String(open));
     nav.classList.toggle('open', open);
     if (header) header.classList.toggle('is-menu-open', open);
+    scheduleScroll();
     if (returnFocus) toggle.focus();
   };
   toggle.addEventListener('click', () => setMenu(toggle.getAttribute('aria-expanded') !== 'true'));
@@ -321,7 +347,7 @@
   moreButton.addEventListener('click', () => {
     expanded = !expanded;
     updateGallery();
-    if (!expanded) document.querySelector('.gallery-controls').scrollIntoView({ block: 'start', behavior: reducedMotion.matches ? 'instant' : 'smooth' });
+    if (!expanded) document.querySelector('.gallery-controls').scrollIntoView({ block: 'start', behavior: motionReduced() ? 'instant' : 'smooth' });
   });
   updateGallery();
 
@@ -374,5 +400,33 @@
       if (opener) opener.focus();
     });
   }
+  const motionToggle = document.querySelector('#motion-toggle');
+  const motionToggleLabel = document.querySelector('#motion-toggle-label');
+  const syncMotion = () => {
+    const enabled = !motionReduced();
+    root.classList.toggle('motion-opt-in', motionOverride === true);
+    root.classList.toggle('motion-paused', !enabled);
+    if (motionToggle) {
+      motionToggle.hidden = false;
+      motionToggle.setAttribute('aria-pressed', String(enabled));
+      motionToggle.setAttribute('aria-label', 'Page motion');
+      motionToggle.title = `Turn page motion ${enabled ? 'off' : 'on'}`;
+    }
+    if (motionToggleLabel) {
+      motionToggleLabel.hidden = false;
+      motionToggleLabel.textContent = `Motion ${enabled ? 'on' : 'off'}`;
+    }
+    cancelHeroTransition();
+    settleProcessAccordions();
+    configureMotion();
+    scheduleScroll();
+  };
+  if (motionToggle) {
+    motionToggle.addEventListener('click', () => {
+      motionOverride = motionReduced();
+      syncMotion();
+    });
+  }
+  syncMotion();
   document.querySelector('#copyright-year').textContent = String(new Date().getFullYear());
 })();

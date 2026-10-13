@@ -1,6 +1,18 @@
 # Validation record
 
-Verified on October 12, 2026 in the supplied development environment.
+Latest verification: October 13, 2026 in the supplied development environment. Earlier validation records follow.
+
+## Large centered logo and visible scroll movement
+
+- Browser checks passed across 11 layouts, including 1920, 1600, 1440, 1226, 600, 390, and 320 pixels wide and a short 390 × 568 viewport. The logo starts at 260 pixels on desktop, centered over the left hero panel, or 180 pixels centered below the mobile navbar. Halfway scrolling produces intermediate sizes of 179 and 131 pixels with the corresponding translation; full docking produces 98 and 82 pixels. Header heights remain 106 and 91 pixels.
+- The initial badge stays clear of the eyebrow and navigation, and the main action stays above the hero controls. No horizontal overflow or circular-logo collisions were observed. Real mouse/Enter menu activation compacts the badge, while Escape restores its correct top or intermediate scroll position after the scheduled frame.
+- Over 200 pixels of actual scrolling, the kitchen photograph moves approximately 15.39 pixels and the copper callout moves 11.08 pixels in the opposite direction. Cropped frames cover the stronger photo movement without exposing empty edges.
+- Reduced motion retains the large initial badge, docks it discretely after 40 pixels, and disables parallax. The visitor's motion toggle can explicitly enable animation under an OS reduced-motion preference or pause it again. JavaScript-disabled visits show a loaded, prominent static hero badge and usable content.
+- Gallery filtering, the photo viewer, smooth expandable sections, the merged footer, and browser runtime checks pass. Desktop and mobile screenshots were reviewed. No new libraries or media assets were added; CSS/JavaScript cache versions were updated.
+
+The static build, JavaScript syntax check, and Git whitespace checks pass. The Google frame was blocked during local browser checks; Google's live map service was not tested.
+
+## Previous verification — October 12, 2026
 
 ## Logo docking, scroll motion, and merged footer
 
