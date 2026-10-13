@@ -161,6 +161,80 @@
     showHeroSlide(0, false);
   }
 
+  const processAccordions = [];
+  document.querySelectorAll('.process-steps details').forEach((details) => {
+    const summary = details.querySelector('summary');
+    const panel = details.querySelector('.process-panel');
+    if (!summary || !panel || typeof details.animate !== 'function') return;
+    let targetOpen = details.open;
+    let animation = null;
+    let transition = 0;
+    const settle = () => {
+      transition += 1;
+      if (animation) {
+        animation.cancel();
+        animation = null;
+      }
+      details.open = targetOpen;
+      details.style.removeProperty('height');
+      details.style.removeProperty('overflow');
+      scheduleScroll();
+    };
+    const toggleDetails = (open) => {
+      targetOpen = open;
+      if (reducedMotion.matches) {
+        settle();
+        return;
+      }
+      // A reversal starts from the current animated height, without a jump.
+      const startHeight = details.getBoundingClientRect().height;
+      transition += 1;
+      if (animation) {
+        animation.cancel();
+        animation = null;
+      }
+      details.open = true;
+      details.style.height = 'auto';
+      const expandedHeight = details.getBoundingClientRect().height;
+      const style = window.getComputedStyle(details);
+      const collapsedHeight = summary.getBoundingClientRect().height
+        + parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth)
+        + parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+      const endHeight = open ? expandedHeight : collapsedHeight;
+      details.style.height = `${startHeight}px`;
+      details.style.overflow = 'hidden';
+      if (Math.abs(startHeight - endHeight) < 1) {
+        settle();
+        return;
+      }
+      const currentTransition = transition;
+      try {
+        animation = details.animate([
+          { height: `${startHeight}px` },
+          { height: `${endHeight}px` }
+        ], { duration: 320, easing: 'cubic-bezier(.22, .68, .3, 1)', fill: 'forwards' });
+        animation.addEventListener('finish', () => {
+          if (transition === currentTransition) settle();
+        }, { once: true });
+      } catch {
+        settle();
+      }
+      scheduleScroll();
+    };
+    summary.addEventListener('click', (event) => {
+      // Native summary activation also synthesizes this click for Enter/Space.
+      event.preventDefault();
+      toggleDetails(animation ? !targetOpen : !details.open);
+    });
+    details.addEventListener('toggle', () => {
+      if (!animation) targetOpen = details.open;
+    });
+    processAccordions.push({ settle: () => { if (animation) settle(); } });
+  });
+  const settleProcessAccordions = () => processAccordions.forEach((accordion) => accordion.settle());
+  window.addEventListener('resize', settleProcessAccordions, { passive: true });
+  reducedMotion.addEventListener('change', settleProcessAccordions);
+
   const toggle = document.querySelector('.menu-toggle');
   const nav = document.querySelector('.site-nav');
   toggle.hidden = false;
@@ -193,6 +267,7 @@
     const matches = matchingCards();
     const visible = expanded ? matches : matches.slice(0, 6);
     cards.forEach((card) => { card.hidden = !visible.includes(card); });
+    visible.forEach((card, index) => card.style.setProperty('--reveal-delay', `${(index % 2) * 70}ms`));
     count.textContent = `${visible.length} of ${matches.length} photos`;
     moreWrap.hidden = matches.length <= 6;
     moreButton.innerHTML = expanded ? 'Show fewer photos <span aria-hidden="true">−</span>' : `View all ${matches.length} photos <span aria-hidden="true">+</span>`;

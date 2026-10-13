@@ -2,6 +2,16 @@
 
 Verified on October 12, 2026 in the supplied development environment.
 
+## Header, motion, and footer refinement
+
+- Browser checks confirm a borderless header and matching hero/header green on desktop and mobile; compact header heights remain 106 and 91 pixels.
+- Dropdown opening and closing were measured during the animation, confirming intermediate heights before they settle. Rapid reversal, real Enter/Space activation, resize during animation, and reduced-motion changes all pass. Temporary height/overflow styles and height animations are cleaned up.
+- The smaller HUNTINGTON BUILDERS footer has no circular logo or decorative wordmark arrow. Its height is approximately 304 pixels at 1440 pixels wide, 245 at 390, and 298 at 320, with no horizontal overflow and working social/home/back-to-top links.
+- Core browser regressions pass, including navigation, hero controls, gallery/photo viewer, all 18 remaining homepage images, custom 404, and native dropdowns with JavaScript disabled. Desktop/mobile screenshots were reviewed.
+- No libraries or media assets were added. The additional CSS/JavaScript is approximately 777 bytes when gzip-compressed; this measures code size rather than visitor download speed.
+
+The static build, JavaScript syntax check, and Git whitespace checks pass. The external Google map service remains outside the scope of local browser validation.
+
 ## Dark redesign validation
 
 The completed redesign passed all 18 browser checks against the generated `dist/` site:

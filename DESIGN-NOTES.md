@@ -18,6 +18,10 @@ The redesign adapts these ideas using native browser features. It does not inclu
 
 The hero has three manually selectable project views, accessible previous/next controls, and a live announcement when the visitor changes the photo. Scrolling reveals content, gently shifts the desktop hero photograph, fills the progress indicator, and changes the sticky header's surface. Project filters, the full gallery, and the keyboard-operated photo viewer remain available. Native expandable sections introduce the initial conversation about building a home.
 
+Small headline entrances, hover responses, and a bounded 70 ms gallery stagger add movement without new media or animation dependencies. The introduction sections animate their height over 320 ms on activation, reverse smoothly on repeated clicks, and settle immediately on resize or a change to reduced motion. They still use native `details` and `summary` when JavaScript or Web Animations is unavailable.
+
+The top of the hero blends into the header with a matching green gradient. The footer uses a smaller, linked HUNTINGTON BUILDERS wordmark and compact contact/social rows.
+
 Reduced-motion settings disable parallax and entrance effects, including when the preference changes during a visit. With JavaScript unavailable, all content and project photos remain visible, links remain usable, and the expandable sections still work.
 
 ## Fonts
