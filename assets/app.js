@@ -4,7 +4,7 @@
 
   const toggle = document.querySelector('.menu-toggle');
   const nav = document.querySelector('.site-nav');
-  const mobile = window.matchMedia('(max-width: 800px)');
+  const mobile = window.matchMedia('(max-width: 900px)');
   toggle.hidden = false;
   const setMenu = (open, returnFocus = false) => {
     toggle.setAttribute('aria-expanded', String(open));

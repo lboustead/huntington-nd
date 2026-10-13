@@ -11,7 +11,7 @@ Reviewed the existing public website at <https://huntingtonnd.com/> on October 1
 - Address: 4521 Ottawa Street, Bismarck, ND 58503, United States.
 - Email: <builders@huntingtonnd.com>.
 - Telephone: +1 701 471 4673.
-- Facebook: <https://www.facebook.com/HuntingtonBuilders>.
+- Facebook (handle supplied by the owner): <https://www.facebook.com/huntington.builders/>.
 - Instagram: <https://www.instagram.com/huntington.builders/>.
 
 The live site contains a heading for customer feedback but does not provide testimonial text in the fetched page or gallery configuration. No customer quotes, ratings, project counts, awards or claims of ranking were added.
