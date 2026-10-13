@@ -20,7 +20,11 @@ The hero has three manually selectable project views, accessible previous/next c
 
 Small headline entrances, hover responses, and a bounded 70 ms gallery stagger add movement without new media or animation dependencies. The introduction sections animate their height over 320 ms on activation, reverse smoothly on repeated clicks, and settle immediately on resize or a change to reduced motion. They still use native `details` and `summary` when JavaScript or Web Animations is unavailable.
 
-The top of the hero blends into the header with a matching green gradient. The footer uses a smaller, linked HUNTINGTON BUILDERS wordmark and compact contact/social rows.
+The top of the hero blends into the header with a matching green gradient. The original logo starts as a prominent badge extending into the hero, then shrinks into its header position over the first 160 pixels of desktop scrolling or 120 on mobile. Its top-left corner stays fixed, and the header keeps its existing height. Opening the mobile menu compacts the badge to keep links clear; closing it restores its size for the current scroll position. Reduced-motion and JavaScript-disabled visits use the compact logo.
+
+Selected kitchen and gallery photos, the copper photo note, the project heading, and small decorative symbols move gently as their sections cross the viewport. The effects use bounded transforms, cropped image frames, and the existing frame-throttled scroll handler. Measurements are batched before style updates. No media downloads or animation libraries were added.
+
+The footer uses a smaller, linked HUNTINGTON BUILDERS wordmark with one combined area for the tagline, copyright, social links, and back-to-top link.
 
 Reduced-motion settings disable parallax and entrance effects, including when the preference changes during a visit. With JavaScript unavailable, all content and project photos remain visible, links remain usable, and the expandable sections still work.
 

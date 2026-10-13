@@ -38,6 +38,12 @@
   const header = document.querySelector('.site-header');
   const progress = document.querySelector('.scroll-progress');
   const heroImage = document.querySelector('.hero-image');
+  const scrollEffects = Array.from(document.querySelectorAll('[data-scroll-motion], [data-scroll-rotate]')).map((element) => ({
+    element,
+    anchor: element.closest('[data-scroll-anchor]') || element.parentElement,
+    shift: Math.max(-40, Math.min(40, Number(element.dataset.scrollMotion) || 0)),
+    rotation: Math.max(-90, Math.min(90, Number(element.dataset.scrollRotate) || 0))
+  }));
   let heroAnimation = null;
   let heroTransition = 0;
   const cancelHeroTransition = () => {
@@ -83,15 +89,38 @@
   const updateScroll = () => {
     scrollFrame = 0;
     const scrollTop = Math.max(0, window.scrollY);
-    if (header) header.classList.toggle('is-scrolled', scrollTop > 40);
-    if (progress) {
-      const scrollRange = Math.max(1, root.scrollHeight - window.innerHeight);
-      progress.style.transform = `scaleX(${Math.min(1, scrollTop / scrollRange)})`;
+    const viewportHeight = window.innerHeight;
+    const scrollRange = progress ? Math.max(1, root.scrollHeight - viewportHeight) : 1;
+    const reduced = reducedMotion.matches;
+    const anchorBounds = new Map();
+    const effectUpdates = [];
+    // Read stable frames together before any animated styles are written.
+    scrollEffects.forEach((effect) => {
+      if (reduced) {
+        effectUpdates.push({ effect, shift: 0, rotation: 0 });
+        return;
+      }
+      if (!effect.anchor || effect.element.closest('[hidden]')) return;
+      if (!anchorBounds.has(effect.anchor)) anchorBounds.set(effect.anchor, effect.anchor.getBoundingClientRect());
+      const bounds = anchorBounds.get(effect.anchor);
+      if (!bounds.height || bounds.bottom < -160 || bounds.top > viewportHeight + 160) return;
+      const position = Math.max(0, Math.min(1, (viewportHeight - bounds.top) / (viewportHeight + bounds.height)));
+      effectUpdates.push({ effect, shift: (position - 0.5) * 2 * effect.shift, rotation: position * effect.rotation });
+    });
+    if (header) {
+      header.classList.toggle('is-scrolled', scrollTop > 40);
+      const dockDistance = mobile.matches ? 120 : 160;
+      header.style.setProperty('--brand-progress', String(reduced ? 1 : Math.min(1, scrollTop / dockDistance)));
     }
+    if (progress) progress.style.transform = `scaleX(${Math.min(1, scrollTop / scrollRange)})`;
     if (heroImage) {
-      const shift = reducedMotion.matches || mobile.matches ? 0 : Math.min(50, scrollTop * 0.08);
+      const shift = reduced || mobile.matches ? 0 : Math.min(50, scrollTop * 0.08);
       heroImage.style.setProperty('--hero-shift', `${shift}px`);
     }
+    effectUpdates.forEach(({ effect, shift, rotation }) => {
+      effect.element.style.setProperty('--scroll-shift', `${shift.toFixed(2)}px`);
+      effect.element.style.setProperty('--scroll-rotate', `${rotation.toFixed(2)}deg`);
+    });
   };
   const scheduleScroll = () => {
     if (!scrollFrame) scrollFrame = window.requestAnimationFrame(updateScroll);
@@ -241,6 +270,7 @@
   const setMenu = (open, returnFocus = false) => {
     toggle.setAttribute('aria-expanded', String(open));
     nav.classList.toggle('open', open);
+    if (header) header.classList.toggle('is-menu-open', open);
     if (returnFocus) toggle.focus();
   };
   toggle.addEventListener('click', () => setMenu(toggle.getAttribute('aria-expanded') !== 'true'));

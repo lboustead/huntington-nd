@@ -2,6 +2,16 @@
 
 Verified on October 12, 2026 in the supplied development environment.
 
+## Logo docking, scroll motion, and merged footer
+
+- The featured logo measures 196 pixels on desktop and approximately 148 on mobile at the top, then docks at 98 and 82 respectively. Continuous intermediate sizes were checked across seven widths and an additional short mobile viewport; its top-left corner stays fixed and it does not overlap the headline or header actions. Header heights remain 106 and 91 pixels.
+- Opening the mobile menu compacts the logo so all links remain visible and clickable. Real mouse/Enter activation, Escape/focus restoration, outside clicks, navigation links, and restoring the correct logo size for the current scroll position pass.
+- Kitchen/gallery photos, the copper note, the project heading, and decorative symbols move with actual scrolling within their bounded ranges. Cropped frames cover the image movement. Reduced motion resets these effects and keeps the logo compact; JavaScript-disabled visits retain static content and the compact logo.
+- The tagline, copyright, social links, and back-to-top link now share one footer area. There is no circular footer logo, duplicate bottom row, or horizontal overflow.
+- Gallery, photo viewer, mobile navigation, and smooth accordion regression checks pass. Desktop/mobile screenshots were reviewed. No libraries or media were added.
+
+The static build, JavaScript syntax check, and Git whitespace checks pass. Browser/preview processes used for validation were stopped.
+
 ## Header, motion, and footer refinement
 
 - Browser checks confirm a borderless header and matching hero/header green on desktop and mobile; compact header heights remain 106 and 91 pixels.
