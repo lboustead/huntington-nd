@@ -8,7 +8,7 @@ Reviewed the existing public website at <https://huntingtonnd.com/> on October 1
 - Focus: quality construction and home building in Bismarck, North Dakota.
 - The existing site states that homeowner involvement is central to its home building process.
 - Free consultation is offered on the original site.
-- Address: 4521 Ottawa Street, Suite 200, Bismarck, ND 58503, United States.
+- Address: 4521 Ottawa Street, Bismarck, ND 58503, United States.
 - Email: <builders@huntingtonnd.com>.
 - Telephone: +1 701 471 4673.
 - Facebook: <https://www.facebook.com/HuntingtonBuilders>.
