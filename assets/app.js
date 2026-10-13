@@ -1,10 +1,168 @@
 (() => {
   'use strict';
-  document.documentElement.classList.add('js');
+  const root = document.documentElement;
+  root.classList.add('js');
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const mobile = window.matchMedia('(max-width: 900px)');
+  const revealElements = Array.from(document.querySelectorAll('[data-reveal]'));
+  let revealObserver = null;
+  const observeReveals = (elements = revealElements) => {
+    if (!revealObserver) return;
+    elements.forEach((element) => {
+      if (element.hidden || element.classList.contains('is-visible')) return;
+      // Re-observe cards after a filter changes their display state.
+      revealObserver.unobserve(element);
+      revealObserver.observe(element);
+    });
+  };
+  const configureMotion = () => {
+    if (revealObserver) revealObserver.disconnect();
+    revealObserver = null;
+    if (reducedMotion.matches || !('IntersectionObserver' in window)) {
+      root.classList.remove('motion-ready');
+      revealElements.forEach((element) => element.classList.add('is-visible'));
+      return;
+    }
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting || entry.target.hidden) return;
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      });
+    }, { rootMargin: '0px 0px -35px 0px', threshold: 0.08 });
+    revealObserver = observer;
+    root.classList.add('motion-ready');
+    observeReveals();
+  };
+
+  const header = document.querySelector('.site-header');
+  const progress = document.querySelector('.scroll-progress');
+  const heroImage = document.querySelector('.hero-image');
+  let heroAnimation = null;
+  let heroTransition = 0;
+  const cancelHeroTransition = () => {
+    heroTransition += 1;
+    if (heroAnimation) {
+      heroAnimation.cancel();
+      heroAnimation = null;
+    }
+    return heroTransition;
+  };
+  const animateHeroImage = async (transition) => {
+    if (!heroImage || reducedMotion.matches || typeof heroImage.animate !== 'function') return;
+    try {
+      if (typeof heroImage.decode === 'function') {
+        await heroImage.decode();
+      } else if (!heroImage.complete) {
+        await new Promise((resolve, reject) => {
+          const cleanup = () => {
+            heroImage.removeEventListener('load', loaded);
+            heroImage.removeEventListener('error', failed);
+          };
+          const loaded = () => { cleanup(); resolve(); };
+          const failed = () => { cleanup(); reject(new Error('Hero image could not load.')); };
+          heroImage.addEventListener('load', loaded, { once: true });
+          heroImage.addEventListener('error', failed, { once: true });
+        });
+      }
+      if (transition !== heroTransition || reducedMotion.matches || !heroImage.naturalWidth) return;
+      // Only animate opacity so the scroll-driven image position stays intact.
+      const animation = heroImage.animate([{ opacity: 0.4 }, { opacity: 1 }], {
+        duration: 620,
+        easing: 'cubic-bezier(.22, 1, .36, 1)'
+      });
+      heroAnimation = animation;
+      animation.addEventListener('finish', () => {
+        if (heroAnimation === animation) heroAnimation = null;
+      }, { once: true });
+    } catch {
+      // A canceled decode or failed image must not interrupt the controls.
+    }
+  };
+  let scrollFrame = 0;
+  const updateScroll = () => {
+    scrollFrame = 0;
+    const scrollTop = Math.max(0, window.scrollY);
+    if (header) header.classList.toggle('is-scrolled', scrollTop > 40);
+    if (progress) {
+      const scrollRange = Math.max(1, root.scrollHeight - window.innerHeight);
+      progress.style.transform = `scaleX(${Math.min(1, scrollTop / scrollRange)})`;
+    }
+    if (heroImage) {
+      const shift = reducedMotion.matches || mobile.matches ? 0 : Math.min(50, scrollTop * 0.08);
+      heroImage.style.setProperty('--hero-shift', `${shift}px`);
+    }
+  };
+  const scheduleScroll = () => {
+    if (!scrollFrame) scrollFrame = window.requestAnimationFrame(updateScroll);
+  };
+  window.addEventListener('scroll', scheduleScroll, { passive: true });
+  window.addEventListener('resize', scheduleScroll, { passive: true });
+  window.addEventListener('load', scheduleScroll, { once: true });
+  reducedMotion.addEventListener('change', () => {
+    cancelHeroTransition();
+    configureMotion();
+    scheduleScroll();
+  });
+  mobile.addEventListener('change', scheduleScroll);
+  configureMotion();
+  updateScroll();
+
+  const heroSlides = [
+    {
+      src: '/assets/home-living.jpg',
+      alt: 'A bright living room with timber beams, a stone fireplace and warm wood floors.',
+      caption: 'Spaces to gather.'
+    },
+    {
+      src: '/assets/home-kitchen.jpg',
+      alt: 'A Huntington Builders kitchen with white cabinets, a wood island, black fixtures and an adjoining dining area.',
+      caption: 'Details to make your own.'
+    },
+    {
+      src: '/assets/project-11.jpg',
+      alt: 'A house with a stone facade, timber accents and a landscaped front yard.',
+      caption: 'A place to come home.'
+    }
+  ];
+  const heroButtons = Array.from(document.querySelectorAll('[data-hero-slide]'));
+  const heroCaption = document.querySelector('.hero-image-caption');
+  const heroCounter = document.querySelector('.hero-image-counter');
+  const heroAnnouncement = document.querySelector('#hero-announcement');
+  let heroIndex = 0;
+  const showHeroSlide = (index, announce = true) => {
+    if (!heroImage) return;
+    const nextIndex = (index + heroSlides.length) % heroSlides.length;
+    const animate = announce && nextIndex !== heroIndex;
+    const transition = cancelHeroTransition();
+    heroIndex = nextIndex;
+    const slide = heroSlides[heroIndex];
+    heroImage.src = slide.src;
+    heroImage.alt = slide.alt;
+    if (heroCaption) heroCaption.textContent = slide.caption;
+    if (heroCounter) heroCounter.textContent = `${String(heroIndex + 1).padStart(2, '0')} / ${String(heroSlides.length).padStart(2, '0')}`;
+    heroButtons.forEach((button) => {
+      const active = Number(button.dataset.heroSlide) === heroIndex;
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-pressed', String(active));
+    });
+    if (heroAnnouncement && announce) heroAnnouncement.textContent = `${slide.caption} Photo ${heroIndex + 1} of ${heroSlides.length}.`;
+    if (animate) animateHeroImage(transition);
+  };
+  if (heroImage) {
+    document.querySelectorAll('[data-hero-controls], .hero-controls').forEach((controls) => { controls.hidden = false; });
+    heroButtons.forEach((button) => {
+      button.addEventListener('click', () => showHeroSlide(Number(button.dataset.heroSlide)));
+    });
+    const heroPrev = document.querySelector('[data-hero-prev]');
+    const heroNext = document.querySelector('[data-hero-next]');
+    if (heroPrev) heroPrev.addEventListener('click', () => showHeroSlide(heroIndex - 1));
+    if (heroNext) heroNext.addEventListener('click', () => showHeroSlide(heroIndex + 1));
+    showHeroSlide(0, false);
+  }
 
   const toggle = document.querySelector('.menu-toggle');
   const nav = document.querySelector('.site-nav');
-  const mobile = window.matchMedia('(max-width: 900px)');
   toggle.hidden = false;
   const setMenu = (open, returnFocus = false) => {
     toggle.setAttribute('aria-expanded', String(open));
@@ -39,6 +197,8 @@
     moreWrap.hidden = matches.length <= 6;
     moreButton.innerHTML = expanded ? 'Show fewer photos <span aria-hidden="true">−</span>' : `View all ${matches.length} photos <span aria-hidden="true">+</span>`;
     moreButton.setAttribute('aria-expanded', String(expanded));
+    observeReveals(visible);
+    scheduleScroll();
   };
   document.querySelector('.gallery-controls').hidden = false;
   filters.forEach((filter) => {
@@ -56,7 +216,7 @@
   moreButton.addEventListener('click', () => {
     expanded = !expanded;
     updateGallery();
-    if (!expanded) document.querySelector('.gallery-controls').scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+    if (!expanded) document.querySelector('.gallery-controls').scrollIntoView({ block: 'start', behavior: reducedMotion.matches ? 'instant' : 'smooth' });
   });
   updateGallery();
 

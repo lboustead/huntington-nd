@@ -52,6 +52,8 @@ handoff checklist.
 
 ## Editing
 
+The visual direction and online references are documented in [DESIGN-NOTES.md](DESIGN-NOTES.md). The homepage includes a manually browsable hero, scroll reveals, gallery filters, a keyboard-operated photo viewer, and expandable introduction sections. Motion respects the visitor's reduced-motion setting, and core content and links work without JavaScript.
+
 - `index.html`: copy, section order, contact details, links, and metadata.
 - `assets/`: styles, browser interactions, photos, icons, and local fonts.
 - `robots.txt` and `sitemap.xml`: production crawl settings.
