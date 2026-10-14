@@ -40,8 +40,9 @@ when ready. Keep the old hosting available until you have checked the new site.
 ## Contact Function
 
 Follow [CONTACT-SETUP.md](CONTACT-SETUP.md) to configure Google Workspace SMTP in this Pages
-project. Static pages deploy as before, with `functions/api/contact.js` compiled
-from the repository root. Email delivery requires the SMTP app-password binding; redeploy after changing those settings.
+project. Static pages deploy as before. The build packages `functions/api/contact.js`
+into Pages advanced-mode `dist/_worker.js`, alongside API-only routing, so the
+contact handler is included even when only the build output is uploaded. Email delivery requires the SMTP app-password binding; redeploy after changing those settings.
 
 ## Updates and rollback
 

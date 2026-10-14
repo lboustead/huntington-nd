@@ -84,15 +84,16 @@ package dependencies. The contact endpoint requires the Google Workspace SMTP co
 - `scripts/`: dependency-free local tooling; excluded from the deployed output.
 
 `dist/` is generated and ignored by Git. The build copies public HTML, assets and Pages configuration to `dist/`.
-Cloudflare compiles `functions/` from the repository root; the generated routing
-file invokes the Function only for `/api/contact`. Documentation, tests and local
+The source handler stays in `functions/api/contact.js`. The build emits a
+self-contained Pages advanced-mode `dist/_worker.js`; API-only `_routes.json`
+keeps static pages on the native asset service. Documentation, tests and local
 tooling stay outside the public files.
 
 ## Contact and service integrations
 
 The contact section shares BisMan's two-column layout and sends directly through
 `/api/contact`. The Function confirms Google Workspace SMTP acceptance before the browser shows
-success, preserves fields on failure, and uses stable retry keys. Direct phone,
+success, preserves fields on failure, and uses a stable Message-ID for retries. Direct phone,
 SMS and email links remain available; without JavaScript use these contact links.
 No submitted content is logged or stored by the site. Read
 [CONTACT-SETUP.md](CONTACT-SETUP.md) before enabling delivery.

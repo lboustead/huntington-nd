@@ -7,9 +7,13 @@ The contact form for Huntington Builders submits to the Cloudflare Pages Functio
 
 ## Enable delivery in Cloudflare Pages
 
-Keep build command `npm run build`, output directory `dist`, and `functions/`
-at the repository root. The Function uses Cloudflare's native TCP sockets; no
-SMTP package or separate server is required.
+Keep build command `npm run build` and output directory `dist`. The source
+handler in `functions/api/contact.js` is packaged into the self-contained
+`dist/_worker.js` required by Pages advanced mode. `dist/_routes.json` invokes
+that worker only for the contact endpoint; static headers, redirects and the
+custom 404 remain native. Upload the complete build output including these
+files. The worker uses Cloudflare's native TCP sockets, with no SMTP package
+or separate server.
 
 In this Pages project's **Settings → Variables and Secrets**, set:
 
