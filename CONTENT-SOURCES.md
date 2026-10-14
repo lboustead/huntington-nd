@@ -71,3 +71,11 @@ The original GoDaddy form and attachment upload depended on GoDaddy services. Th
 ## Review before launch
 
 Confirm current contact details and review the public map contents. Confirm that the downloaded existing photographs remain licensed for this business's website. Current availability should be maintained in the published map or with future verified listings. DNS and email records should be checked separately during migration; this repository does not change them.
+
+## October refinements
+
+The location map now loads without a button. The original logo is slightly
+larger, with sparse wood-tone accents elsewhere. Featured project photos use a
+five-second carousel with pause and manual controls. The legal footer carries
+the current Atrium license/ownership wording, with Huntington Builders as the
+personal interest. Contact delivery uses Google Workspace SMTP; see CONTACT-SETUP.md.

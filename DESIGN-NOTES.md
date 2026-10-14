@@ -10,7 +10,9 @@ generous space and a personal invitation to build.
 | Role | Value | Purpose |
 | --- | --- | --- |
 | White | #ffffff | Main surface and space around photographs |
-| Graphite | #252a2d | Type, primary actions and the contact section |
+| Graphite | #252a2d | Type and primary actions |
+| Wood | #b88c68 / #795439 | Small logo-related accents and selected actions |
+| Wood wash | #f6f0e9 | Contact surface and a quiet photo caption |
 | Slate | #536b78 | Focus rings and interaction feedback |
 | Concrete | #f1f3f3 | Lots-and-homes surface |
 | Sky grey | #e5ecef | Map preview background |
@@ -21,11 +23,11 @@ architecture, with large, lighter display type and sturdier navigation/body text
 Headings and body copy are left aligned. Supporting text has short reading widths.
 
 ```text
-Small logo and name         Navigation           Free consultation
+Larger logo and name        Navigation           Free consultation
 
 Large two-line headline                 Short introduction / location
 Wide exterior photograph with one clear portfolio action
-Photo caption                            Manual photo controls
+Photo caption                            Carousel controls / pause
 
 Kitchen photograph                      Personal building approach
 
@@ -36,7 +38,7 @@ More project photographs in paired rows
 
 Lots and homes                          Load the real location map
 Getting started                         Three expandable steps
-Consultation                            Verified contact details
+Consultation / verified contacts        Inquiry form
 Wordmark                                Social links / back to top
 ```
 
@@ -45,7 +47,9 @@ immediately identifies the business as a builder in its actual landscape.
 No decorative feature cards, invented achievements or property listings are
 added. The opening portfolio pair uses an interior and a material detail;
 the older rendering collage and kitchen remain in the expanded gallery.
-The logo stays small, replaceable, and unchanged.
+The original logo remains replaceable. Its header size is 56 pixels on desktop
+and 46 pixels on mobile, with slightly larger wordmark text. The original wood
+color informs a few accents rather than a full warm palette.
 
 ## Motion and interactions
 
@@ -66,16 +70,21 @@ replay after leaving the viewport and returning from either direction. Vertical
 reveals mirror their offset when returning from the top as visitors scroll up.
 The palette, typography and
 layout stay consistent; variety comes from the relationships between the actual
-photos and content, without bounce or rotation. There is no automatic carousel.
-Manual featured-photo changes slide
+photos and content, without bounce or rotation. Featured photos advance every
+five seconds while the carousel is visible and the device permits motion.
+Pause/Play and previous/next controls remain available. Hover, focus, leaving
+the viewport and hiding the tab stop automatic advances; explicit Play can
+resume while interacting. Automatic changes do not make live announcements.
+Featured-photo changes slide
 horizontally in the selected direction over 480 ms after the next image decodes.
 The outgoing image is a temporary decorative layer, removed on completion or
 interruption. Previous/next controls keep their direction even at the ends.
 Gallery filters, expandable photo sets and the native dialog retain keyboard
 and screen-reader behavior. The dialog supports arrow keys, Escape and focus
 restoration. Native details/summary use short interruptible height transitions.
-Mobile menu closure moves focus to a visible destination. The map loads on
-request, with an external viewer fallback and a normal embed without JavaScript.
+Mobile menu closure moves focus to a visible destination. The location map
+loads automatically, keeps its source with JavaScript enabled or disabled, and
+has an external viewer link.
 
 Scroll entrances use IntersectionObserver and CSS transform/opacity transitions.
 Compositor hints apply only during an entrance and clear when it ends or is
@@ -98,6 +107,13 @@ content, contact actions and project photo links work without JavaScript.
 Motion uses CSS and existing native Web Animations APIs. No application
 dependencies, remote scripts, or skill files are added.
 
+The contact section uses BisMan's two-column arrangement: verified email,
+phone/SMS and address on the left, with the same white inquiry-card layout on
+the right. The palette and Manrope typography remain Huntington's. A Pages
+Function sends through Google Workspace SMTP; pending, error and accepted states are explicit,
+and failures preserve visitor input. Delivery bindings are documented in
+CONTACT-SETUP.md.
+
 ## Footer refinement
 
 The footer uses the existing graphite, white and slate palette and Manrope.
@@ -105,7 +121,9 @@ Four quiet desktop columns group the company introduction, page navigation,
 social links and Bismarck address. A larger typographic Huntington signature
 forms the closing visual moment; the address, links and controls remain static.
 On mobile, navigation sits in two columns beneath the introduction, with the
-address and copyright below. The logo asset remains unchanged.
+address and copyright below. The final footer paragraph carries the same
+license/ownership disclosure as Atrium, identifying Huntington Builders as the
+ownership interest and appending copyright. The logo asset remains unchanged.
 
 ```text
 Company / consultation       Explore       Follow along       Visit us

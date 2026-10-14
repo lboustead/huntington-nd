@@ -100,9 +100,16 @@
     root.classList.add('scroll-motion');
     observeEntrances();
   };
+  let pointerEntrance = null;
+  document.addEventListener('pointerdown', (event) => {
+    pointerEntrance = event.target.closest('[data-enter]');
+  }, true);
+  const clearPointerEntrance = () => { window.setTimeout(() => { pointerEntrance = null; }, 0); };
+  document.addEventListener('pointerup', clearPointerEntrance, true);
+  document.addEventListener('pointercancel', clearPointerEntrance, true);
   document.addEventListener('focusin', (event) => {
     const entrance = event.target.closest('[data-enter]');
-    if (entrance) revealEntrance(entrance, true);
+    if (entrance) revealEntrance(entrance, entrance !== pointerEntrance);
   });
   document.addEventListener('focusout', (event) => {
     const entrance = event.target.closest('[data-enter]');
@@ -123,6 +130,23 @@
   const heroCaption = document.querySelector('.hero-image-caption');
   const heroCounter = document.querySelector('.hero-image-counter');
   const heroAnnouncement = document.querySelector('#hero-announcement');
+  const heroVisual = document.querySelector('.hero-visual');
+  const heroPause = document.querySelector('[data-hero-pause]');
+  let heroTimer = 0;
+  let heroPaused = false;
+  let heroPlayRequested = false;
+  let heroInView = true;
+  const canAdvanceHero = () => !heroPaused && !motionReduced() && !document.hidden
+    && heroInView && (heroPlayRequested || (!heroVisual?.matches(':hover') && !heroVisual?.contains(document.activeElement)));
+  const scheduleHeroAdvance = () => {
+    window.clearTimeout(heroTimer);
+    heroTimer = 0;
+    if (!heroImage || !canAdvanceHero()) return;
+    heroTimer = window.setTimeout(() => {
+      heroTimer = 0;
+      showHeroSlide(heroIndex + 1, 1, true).finally(scheduleHeroAdvance);
+    }, 5000);
+  };
   let heroIndex = 0;
   let heroVisibleIndex = 0;
   let heroAnimations = [];
@@ -138,7 +162,7 @@
     heroTransition += 1;
     stopHeroAnimation();
   };
-  const showHeroSlide = async (index, direction = 0) => {
+  const showHeroSlide = async (index, direction = 0, automatic = false) => {
     if (!heroImage) return;
     const next = (index + heroSlides.length) % heroSlides.length;
     if (next === heroIndex) return;
@@ -153,6 +177,10 @@
       return;
     }
     if (transition !== heroTransition) return;
+    if (automatic && !canAdvanceHero()) {
+      heroIndex = heroVisibleIndex;
+      return;
+    }
     const slideDirection = direction || Math.sign(next - heroVisibleIndex) || 1;
     const animateTransition = !motionReduced() && typeof heroImage.animate === 'function';
     if (animateTransition) {
@@ -169,7 +197,7 @@
     heroCaption.textContent = slide.caption;
     heroCounter.textContent = `${String(next + 1).padStart(2, '0')} / 03`;
     for (const button of heroButtons) button.setAttribute('aria-pressed', String(Number(button.dataset.heroSlide) === next));
-    heroAnnouncement.textContent = `${slide.caption} Photo ${next + 1} of ${heroSlides.length}.`;
+    if (!automatic) heroAnnouncement.textContent = `${slide.caption} Photo ${next + 1} of ${heroSlides.length}.`;
     if (animateTransition) {
       const timing = { duration: 480, easing: 'cubic-bezier(.22, .61, .36, 1)' };
       try {
@@ -194,6 +222,25 @@
     for (const button of heroButtons) button.addEventListener('click', () => showHeroSlide(Number(button.dataset.heroSlide)));
     document.querySelector('[data-hero-prev]').addEventListener('click', () => showHeroSlide(heroIndex - 1, -1));
     document.querySelector('[data-hero-next]').addEventListener('click', () => showHeroSlide(heroIndex + 1, 1));
+    heroPause?.addEventListener('click', () => {
+      heroPaused = !heroPaused;
+      heroPlayRequested = !heroPaused;
+      heroPause.textContent = heroPaused ? 'Play' : 'Pause';
+      heroPause.setAttribute('aria-label', `${heroPaused ? 'Play' : 'Pause'} featured photo carousel`);
+      scheduleHeroAdvance();
+    });
+    const pauseForInteraction = () => { heroPlayRequested = false; scheduleHeroAdvance(); };
+    heroVisual.addEventListener('mouseenter', pauseForInteraction);
+    heroVisual.addEventListener('mouseleave', pauseForInteraction);
+    heroVisual.addEventListener('focusin', (event) => { if (event.target !== heroPause) pauseForInteraction(); });
+    heroVisual.addEventListener('focusout', () => { heroPlayRequested = false; window.requestAnimationFrame(scheduleHeroAdvance); });
+    document.addEventListener('visibilitychange', scheduleHeroAdvance);
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver((entries) => {
+        heroInView = entries[0].isIntersecting;
+        scheduleHeroAdvance();
+      }).observe(heroVisual);
+    }
   }
   const processAccordions = [];
   document.querySelectorAll('.process-steps details').forEach((details) => {
@@ -403,20 +450,62 @@
       if (opener) opener.focus();
     });
   }
-  const mapFrame = document.querySelector('.availability-map iframe');
-  const mapPlaceholder = document.querySelector('.map-placeholder');
-  const mapLoad = document.querySelector('#map-load');
-  if (mapFrame && mapPlaceholder && mapLoad) {
-    const mapSource = mapFrame.getAttribute('src');
-    mapFrame.removeAttribute('src');
-    mapFrame.hidden = true;
-    mapPlaceholder.hidden = false;
-    mapLoad.addEventListener('click', () => {
-      mapFrame.src = mapSource;
-      mapFrame.hidden = false;
-      mapPlaceholder.hidden = true;
-      mapFrame.focus();
-    }, { once: true });
+  const form = document.querySelector('#contact-form');
+  if (form) {
+    const status = document.querySelector('#form-status');
+    const button = form.querySelector('[type="submit"]');
+    const label = button.querySelector('[data-submit-label]');
+    const startedAt = form.elements.namedItem('startedAt');
+    startedAt.value = String(Date.now());
+    let pending = false;
+    document.querySelectorAll('[data-interest]').forEach(link => link.addEventListener('click', () => {
+      form.elements.namedItem('interest').value = link.dataset.interest;
+    }));
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      if (pending) return;
+      for (const name of ['name', 'email', 'phone', 'message']) {
+        const field = form.elements.namedItem(name);
+        if (field) field.value = field.value.trim();
+      }
+      if (!form.reportValidity()) return;
+      const data = new FormData(form);
+      const payload = Object.fromEntries(['name', 'email', 'phone', 'interest', 'message', 'website'].map(name => [name, String(data.get(name) || '').trim()]));
+      payload.startedAt = Number(data.get('startedAt'));
+      pending = true;
+      button.disabled = true;
+      form.setAttribute('aria-busy', 'true');
+      label.textContent = 'Sending your message…';
+      status.dataset.state = 'pending';
+      status.textContent = 'Sending your message to our team…';
+      try {
+        const response = await fetch('/api/contact', {
+          method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(payload), signal: AbortSignal.timeout(20000),
+        });
+        const result = await response.json().catch(() => null);
+        if (!response.ok || result?.ok !== true) {
+          throw new Error(result?.error || 'Your message could not be sent. Please try again or call or text our team.');
+        }
+        const unchanged = ['name', 'email', 'phone', 'interest', 'message', 'website'].every(name => String(form.elements.namedItem(name).value).trim() === payload[name]);
+        if (unchanged) form.reset();
+        startedAt.value = String(Date.now());
+        status.dataset.state = 'success';
+        status.textContent = 'Your message has been sent. Our team will be in touch soon.';
+        status.focus({ preventScroll: true });
+      } catch (error) {
+        status.dataset.state = 'error';
+        status.textContent = error.name === 'TimeoutError' || error.name === 'AbortError'
+          ? 'We could not confirm your message was sent. Please try again or call or text our team. Your details are still here.'
+          : `${error.name === 'TypeError' ? 'Your message could not be sent. Please try again or call or text our team.' : error.message || 'Your message could not be sent. Please try again or call or text our team.'} Your details are still here.`;
+        status.focus({ preventScroll: true });
+      } finally {
+        pending = false;
+        button.disabled = false;
+        form.removeAttribute('aria-busy');
+        label.textContent = 'Send your message';
+      }
+    });
   }
 
   const syncMotion = () => {
@@ -425,6 +514,7 @@
     settleProcessAccordions();
     configureEntrances();
     scheduleScroll();
+    scheduleHeroAdvance();
   };
   reducedMotion.addEventListener('change', syncMotion);
   syncMotion();

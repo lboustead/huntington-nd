@@ -23,8 +23,8 @@
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
   <link rel="preload" as="image" href="/assets/project-11.jpg" fetchpriority="high">
   <link rel="preload" as="font" type="font/ttf" href="/assets/manrope-variable.ttf" crossorigin>
-  <link rel="stylesheet" href="/assets/styles.css?v=motion-replay-1">
-  <script src="/assets/app.js?v=motion-replay-1" defer></script>
+  <link rel="stylesheet" href="/assets/styles.css?v=site-refinements-1">
+  <script src="/assets/app.js?v=site-refinements-1" defer></script>
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"HomeAndConstructionBusiness","@id":"https://huntingtonnd.com/#business","name":"Huntington Builders","url":"https://huntingtonnd.com/","description":"Home builders offering quality construction in Bismarck, North Dakota.","image":"https://huntingtonnd.com/assets/project-11.jpg","email":"builders@huntingtonnd.com","telephone":"+17014714673","address":{"@type":"PostalAddress","streetAddress":"4521 Ottawa Street","addressLocality":"Bismarck","addressRegion":"ND","postalCode":"58503","addressCountry":"US"},"areaServed":{"@type":"City","name":"Bismarck","containedInPlace":{"@type":"State","name":"North Dakota"}},"sameAs":["https://www.facebook.com/huntington.builders/","https://www.instagram.com/huntington.builders/"]}
   </script>
@@ -56,7 +56,7 @@
           <p class="hero-location"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none"><path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="10" r="2.3" stroke="currentColor" stroke-width="1.5"/></svg> Home builders in Bismarck, North Dakota</p>
         </div>
       </div>
-      <div class="hero-visual">
+      <div class="hero-visual" role="region" aria-roledescription="carousel" aria-label="Featured projects">
         <div class="hero-image-frame">
           <img class="hero-image" src="/assets/project-11.jpg" width="1600" height="899" alt="A Huntington Builders home with stone and timber details, surrounded by the North Dakota prairie." fetchpriority="high">
           <a class="hero-image-link" href="#work">Explore our work <span aria-hidden="true"><svg class="icon-up-right" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M5 19 19 5M5 5h14v14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
@@ -71,6 +71,7 @@
               <button type="button" data-hero-slide="2" aria-label="Show kitchen details" aria-pressed="false"><span class="sr-only">Kitchen details</span></button>
             </div>
             <button type="button" class="hero-arrow" data-hero-next aria-label="Next featured project">→</button>
+            <button type="button" class="hero-playback" data-hero-pause aria-label="Pause featured photo carousel">Pause</button>
           </div>
         </div>
       </div>
@@ -135,17 +136,10 @@
           <h2 id="availability-title">Find your place<br>in Bismarck.</h2>
           <p>Looking for your next home or a place to start? Explore our lots and spec home location map, then connect with our team to talk about current availability.</p>
           <a class="button button-gold" href="https://www.google.com/maps/d/viewer?mid=1II6unIVWoHVxY8v64Ezl2_JluJmNyAY" target="_blank" rel="noopener noreferrer">Explore the location map <span aria-hidden="true"><svg class="icon-up-right" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M5 19 19 5M5 5h14v14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="sr-only"> (opens Google Maps in a new tab)</span></a>
-          <a class="availability-inquiry" href="mailto:builders@huntingtonnd.com?subject=Lots%20and%20spec%20home%20availability">Ask about available lots &amp; homes <span aria-hidden="true"><svg class="icon-up-right" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M5 19 19 5M5 5h14v14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
+          <a class="availability-inquiry" href="#contact" data-interest="Lots and spec homes">Ask about available lots &amp; homes <span aria-hidden="true"><svg class="icon-up-right" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M5 19 19 5M5 5h14v14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
           <p class="availability-note">Availability changes. Please contact us to confirm details.</p>
         </div>
         <div class="availability-map" data-enter="settle" data-enter-step="1">
-          <div class="map-placeholder" hidden>
-            <svg class="map-pin" aria-hidden="true" focusable="false" viewBox="0 0 48 48" fill="none"><path d="M39 20c0 11-15 23-15 23S9 31 9 20a15 15 0 1 1 30 0Z" stroke="currentColor" stroke-width="1.2"/><circle cx="24" cy="20" r="5" stroke="currentColor" stroke-width="1.2"/></svg>
-            <p class="map-placeholder-title">A place for what’s next.</p>
-            <p>Explore our lots and spec home location map.</p>
-            <button class="button button-light" type="button" id="map-load">Load location map <span aria-hidden="true">+</span></button>
-            <a href="https://www.google.com/maps/d/viewer?mid=1II6unIVWoHVxY8v64Ezl2_JluJmNyAY" target="_blank" rel="noopener noreferrer">Open in Google Maps<span class="sr-only"> (opens in a new tab)</span></a>
-          </div>
           <iframe src="https://www.google.com/maps/d/embed?mid=1II6unIVWoHVxY8v64Ezl2_JluJmNyAY&amp;ehbc=2E312F" width="640" height="480" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Huntington Builders lots and spec homes map" allowfullscreen></iframe>
         </div>
       </div>
@@ -164,19 +158,36 @@
       </div>
     </section>
 
-    <section class="contact section-pad container" id="contact" aria-labelledby="contact-title">
-      <div class="section-label"><span>Your free consultation</span></div>
-      <div class="contact-grid">
-        <div data-enter="up">
-          <h2 id="contact-title">Let’s talk<br>about your home.</h2>
-          <p class="contact-intro">Tell us what you have in mind.<br>Your free consultation is a good place to begin.</p>
-          <a class="button button-dark" href="mailto:builders@huntingtonnd.com?subject=Free%20home%20building%20consultation">Email for a free consultation <span aria-hidden="true"><svg class="icon-up-right" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M5 19 19 5M5 5h14v14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
-          <p class="contact-email-note">Opens your email app so you can send us your ideas.</p>
+    <section class="contact section-pad" id="contact" aria-labelledby="contact-title">
+      <div class="container contact-grid">
+        <div class="contact-copy" data-enter="up">
+          <p class="section-label">Your free consultation</p>
+          <h2 id="contact-title">Your home starts<br>with a conversation.</h2>
+          <p class="contact-intro">No need to have every detail figured out. Tell us what you have in mind, and we’ll help you take the next step.</p>
+          <a class="contact-email" href="mailto:builders@huntingtonnd.com">builders@huntingtonnd.com <svg class="icon-up-right" aria-hidden="true" viewBox="0 0 24 24" fill="none"><path d="M5 19 19 5M5 5h14v14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+          <div class="contact-details"><div><span class="contact-label">Call or text our team</span><a class="contact-phone" href="tel:+17014714673">701.471.4673</a><a class="sms-link" href="sms:+17014714673">Send a text <svg class="icon-up-right" aria-hidden="true" viewBox="0 0 24 24" fill="none" width="16" height="16"><path d="M5 19 19 5M5 5h14v14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div></div>
+          <address>4521 Ottawa Street<br>Bismarck, ND 58503<br><a class="text-link small-link" href="https://www.google.com/maps/search/?api=1&amp;query=4521%20Ottawa%20Street%20Bismarck%20ND%2058503" target="_blank" rel="noopener noreferrer">Get directions <svg class="icon-up-right" aria-hidden="true" viewBox="0 0 24 24" fill="none" width="16" height="16"><path d="M5 19 19 5M5 5h14v14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr-only"> (opens in a new tab)</span></a></address>
         </div>
-        <div class="contact-details">
-          <div data-enter="up"><span class="contact-label">Give us a call</span><a class="contact-phone" href="tel:+17014714673">701.471.4673 <span aria-hidden="true"><svg class="icon-up-right" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M5 19 19 5M5 5h14v14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a></div>
-          <div data-enter="up" data-enter-step="1"><span class="contact-label">Send a note</span><a class="contact-email" href="mailto:builders@huntingtonnd.com">builders@huntingtonnd.com</a></div>
-          <div data-enter="up" data-enter-step="2"><span class="contact-label">Find us in Bismarck</span><address>4521 Ottawa Street<br>Bismarck, ND 58503</address><a class="text-link small-link" href="https://www.google.com/maps/search/?api=1&amp;query=4521%20Ottawa%20Street%20Bismarck%20ND%2058503" target="_blank" rel="noopener noreferrer">Get directions <span aria-hidden="true"><svg class="icon-up-right" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M5 19 19 5M5 5h14v14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="sr-only"> (opens Google Maps in a new tab)</span></a></div>
+        <div class="email-card" data-enter="up" data-enter-step="1">
+          <span class="section-label">Make the introduction</span><h3>What’s on your mind?</h3>
+          <p>Send a note directly to our team. We’ll get back to you about your next step.</p>
+          <form id="contact-form" action="/api/contact" method="post" aria-describedby="form-note">
+            <div class="form-row">
+              <div class="field"><label for="name">Your name <span>(required)</span></label><input id="name" name="name" type="text" autocomplete="name" required maxlength="120"></div>
+              <div class="field"><label for="email">Email <span>(required)</span></label><input id="email" name="email" type="email" autocomplete="email" required maxlength="160"></div>
+            </div>
+            <div class="form-row">
+              <div class="field"><label for="phone">Phone <span>(optional)</span></label><input id="phone" name="phone" type="tel" autocomplete="tel" maxlength="40"></div>
+              <div class="field"><label for="interest">I’m interested in</label><select id="interest" name="interest"><option value="Building a home">Building a home</option><option value="Lots and spec homes">Lots and spec homes</option><option value="Something else">Something else</option></select></div>
+            </div>
+            <div class="field"><label for="message">Tell us a little more <span>(required)</span></label><textarea id="message" name="message" rows="4" required maxlength="3000" placeholder="Your plans, questions, or ideal timing…"></textarea></div>
+            <div class="form-trap" aria-hidden="true"><label for="website">Leave this field empty</label><input id="website" name="website" type="text" tabindex="-1" autocomplete="off"></div>
+            <input name="startedAt" type="hidden">
+            <button class="button button-red" type="submit"><span data-submit-label>Send your message</span><svg class="icon-up-right" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M5 19 19 5M5 5h14v14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <p id="form-note" class="form-note">Your details go to Huntington Builders so we can respond to your inquiry. Prefer a call or text? Our number is alongside.</p>
+            <p id="form-status" class="form-status" role="status" aria-live="polite" aria-atomic="true" tabindex="-1"></p>
+          </form>
+          <noscript><p>To get in touch, <a href="mailto:builders@huntingtonnd.com">email our team</a> or call either number on this page.</p></noscript>
         </div>
       </div>
     </section>
@@ -211,10 +222,10 @@
       <div class="footer-signature-track" data-footer-motion><span class="footer-signature-name">Huntington</span><span class="footer-signature-label">Builders</span></div>
     </div>
     <div class="container footer-base">
-      <p class="footer-copyright">© <span id="copyright-year">2026</span> Huntington Builders. All rights reserved.</p>
       <div class="footer-controls">
         <a class="footer-top" href="#main">Back to top <span aria-hidden="true">↑</span></a>
       </div>
+      <p class="footer-disclosure">Hunt Boustead (Lic. #8264) and Lucas Boustead (Lic. #11629) of The Boustead Group are licensed real estate agents in North Dakota with <a href="https://www.trademarknd.com/" target="_blank" rel="noopener noreferrer">Trademark Realty of Bismarck<span class="sr-only"> (opens in a new tab)</span></a> and have a personal interest in Huntington Builders. © <span id="copyright-year">2026</span> Huntington Builders. All rights reserved.</p>
     </div>
   </footer>
 

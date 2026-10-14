@@ -31,11 +31,17 @@ when ready. Keep the old hosting available until you have checked the new site.
 ## Before the cutover
 
 - Confirm the phone numbers, email addresses, and published service details.
-- Verify linked search, booking, app-store, and map pages still work.
+- Verify the contact form, phone/SMS links and linked map pages.
 - Run `npm ci` and `npm run build`; review the GitHub Actions build result.
 - Confirm `/robots.txt`, `/sitemap.xml`, and a missing URL return appropriate
   content on Pages. A missing URL should return the custom 404 page.
 - Read `CONTENT-SOURCES.md` for any business-specific details needing review.
+
+## Contact Function
+
+Follow [CONTACT-SETUP.md](CONTACT-SETUP.md) to configure Google Workspace SMTP in this Pages
+project. Static pages deploy as before, with `functions/api/contact.js` compiled
+from the repository root. Email delivery requires the SMTP app-password binding; redeploy after changing those settings.
 
 ## Updates and rollback
 
