@@ -53,15 +53,20 @@ handoff checklist.
 ## Editing
 
 The palette, type, layout and interaction details are documented in
-[DESIGN-NOTES.md](DESIGN-NOTES.md). The homepage combines a spacious split hero,
-original project photography and a small, easily replaceable logo. It includes
-three manually browsable hero photos, three targeted once-only reveals, gallery
-filters, a keyboard-operated photo viewer and native expandable introduction
-steps. The lots-and-homes card loads Google Maps on request and retains an
-external viewer link; without JavaScript, the embedded map remains available.
-Motion respects the visitor's reduced-motion setting and can be toggled in the
-footer. Core content and links work without JavaScript. The refresh adds no
-application dependencies or deployment changes.
+[DESIGN-NOTES.md](DESIGN-NOTES.md). The homepage opens with a large exterior
+photograph, crisp charcoal typography and a small, easily replaceable logo.
+The portfolio pairs wide room views with close material details. A short
+horizontal opening sequence, directional hero photo slides and native expandable
+introduction steps provide restrained motion. Gallery filters and a
+keyboard-operated photo viewer make the original project photos easy to browse.
+The lots-and-homes card loads Google Maps on request and retains an external
+viewer link; without JavaScript, the embedded map remains available. Motion
+respects reduced-motion preferences and can be toggled in the footer. The footer
+groups navigation, social links and the Bismarck address, with a large decorative
+wordmark that moves horizontally as the visitor scrolls into the closing section.
+Its links and controls stay stationary. Core
+content and links work without JavaScript. The refresh adds no application
+dependencies or deployment changes.
 
 - `index.html`: copy, section order, contact details, links, and metadata.
 - `assets/`: styles, browser interactions, photos, icons, and local fonts.

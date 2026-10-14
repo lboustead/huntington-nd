@@ -9,12 +9,26 @@
   root.classList.add('js');
   const header = document.querySelector('.site-header');
   const progress = document.querySelector('.scroll-progress');
+  const footerMotion = document.querySelector('[data-footer-motion]');
+  const footerBand = document.querySelector('.footer-signature');
+  const footerBase = document.querySelector('.footer-base');
   let scrollFrame = 0;
   const updateScroll = () => {
     scrollFrame = 0;
     const scrollTop = Math.max(0, window.scrollY);
     if (header) header.classList.toggle('is-scrolled', scrollTop > 24);
     if (progress) progress.style.transform = `scaleX(${Math.min(1, scrollTop / Math.max(1, root.scrollHeight - window.innerHeight))})`;
+    if (footerMotion && footerBand && footerBase) {
+      if (motionReduced()) {
+        footerMotion.style.removeProperty('transform');
+      } else {
+        const band = footerBand.getBoundingClientRect();
+        const distance = band.height + footerBase.offsetHeight;
+        const position = Math.max(0, Math.min(1, (window.innerHeight - band.top) / Math.max(1, distance)));
+        const travel = window.innerWidth <= 680 ? 144 : 280;
+        footerMotion.style.transform = `translate3d(${(1 - position) * travel}px, 0, 0)`;
+      }
+    }
   };
   const scheduleScroll = () => {
     if (!scrollFrame) scrollFrame = window.requestAnimationFrame(updateScroll);
@@ -24,40 +38,11 @@
   window.addEventListener('load', scheduleScroll, { once: true });
   updateScroll();
 
-  const revealElements = Array.from(document.querySelectorAll('[data-reveal]'));
-  let revealObserver = null;
-  const observeReveals = (elements = revealElements) => {
-    if (!revealObserver) return;
-    for (const element of elements) {
-      if (!element.hasAttribute('data-reveal') || element.hidden || element.classList.contains('is-visible')) continue;
-      revealObserver.unobserve(element);
-      revealObserver.observe(element);
-    }
-  };
-  const configureMotion = () => {
-    if (revealObserver) revealObserver.disconnect();
-    revealObserver = null;
-    if (motionReduced() || !('IntersectionObserver' in window)) {
-      root.classList.remove('motion-ready');
-      for (const element of revealElements) element.classList.add('is-visible');
-      return;
-    }
-    revealObserver = new IntersectionObserver((entries) => {
-      for (const entry of entries) {
-        if (!entry.isIntersecting || entry.target.hidden) continue;
-        entry.target.classList.add('is-visible');
-        revealObserver.unobserve(entry.target);
-      }
-    }, { rootMargin: '0px 0px -20px 0px', threshold: 0.08 });
-    root.classList.add('motion-ready');
-    observeReveals();
-  };
-
   const heroImage = document.querySelector('.hero-image');
   const heroSlides = [
-    { src: '/assets/home-living.jpg', alt: 'A bright living room with timber beams, a stone fireplace and warm wood floors.', caption: 'Spaces to gather.' },
-    { src: '/assets/home-kitchen.jpg', alt: 'A Huntington Builders kitchen with white cabinets, a wood island, black fixtures and an adjoining dining area.', caption: 'Details to make your own.' },
-    { src: '/assets/project-11.jpg', alt: 'A house with a stone facade, timber accents and a landscaped front yard.', caption: 'A place to come home.' }
+    { src: '/assets/project-11.jpg', alt: 'A house with a stone facade, timber accents and a landscaped front yard.', caption: 'Stone, timber, and a place to call home.' },
+    { src: '/assets/project-05.jpg', alt: 'An open kitchen and living room with wood beams, a large island and a stone fireplace.', caption: 'Room for the moments that matter.' },
+    { src: '/assets/project-02.jpg', alt: 'A close view of a kitchen island with a black faucet, white counters and wood cabinetry.', caption: 'Details that feel like you.' }
   ];
   const heroButtons = Array.from(document.querySelectorAll('[data-hero-slide]'));
   const heroCaption = document.querySelector('.hero-image-caption');
@@ -65,17 +50,20 @@
   const heroAnnouncement = document.querySelector('#hero-announcement');
   let heroIndex = 0;
   let heroVisibleIndex = 0;
-  let heroAnimation = null;
+  let heroAnimations = [];
+  let heroOutgoing = null;
   let heroTransition = 0;
   const stopHeroAnimation = () => {
-    if (heroAnimation) heroAnimation.cancel();
-    heroAnimation = null;
+    for (const animation of heroAnimations) animation.cancel();
+    heroAnimations = [];
+    if (heroOutgoing) heroOutgoing.remove();
+    heroOutgoing = null;
   };
   const cancelHeroTransition = () => {
     heroTransition += 1;
     stopHeroAnimation();
   };
-  const showHeroSlide = async (index) => {
+  const showHeroSlide = async (index, direction = 0) => {
     if (!heroImage) return;
     const next = (index + heroSlides.length) % heroSlides.length;
     if (next === heroIndex) return;
@@ -90,6 +78,16 @@
       return;
     }
     if (transition !== heroTransition) return;
+    const slideDirection = direction || Math.sign(next - heroVisibleIndex) || 1;
+    const animateTransition = !motionReduced() && typeof heroImage.animate === 'function';
+    if (animateTransition) {
+      heroOutgoing = heroImage.cloneNode(false);
+      heroOutgoing.className = 'hero-transition-image';
+      heroOutgoing.alt = '';
+      heroOutgoing.setAttribute('aria-hidden', 'true');
+      heroOutgoing.removeAttribute('fetchpriority');
+      heroImage.after(heroOutgoing);
+    }
     heroVisibleIndex = next;
     heroImage.src = slide.src;
     heroImage.alt = slide.alt;
@@ -97,15 +95,30 @@
     heroCounter.textContent = `${String(next + 1).padStart(2, '0')} / 03`;
     for (const button of heroButtons) button.setAttribute('aria-pressed', String(Number(button.dataset.heroSlide) === next));
     heroAnnouncement.textContent = `${slide.caption} Photo ${next + 1} of ${heroSlides.length}.`;
-    if (!motionReduced() && typeof heroImage.animate === 'function') {
-      heroAnimation = heroImage.animate([{ opacity: 0.45 }, { opacity: 1 }], { duration: 350, easing: 'ease-out' });
+    if (animateTransition) {
+      const timing = { duration: 480, easing: 'cubic-bezier(.22, .61, .36, 1)' };
+      try {
+        heroAnimations.push(heroImage.animate([
+          { transform: `translateX(${slideDirection * 100}%)` },
+          { transform: 'translateX(0)' }
+        ], timing));
+        heroAnimations.push(heroOutgoing.animate([
+          { transform: 'translateX(0)' },
+          { transform: `translateX(${slideDirection * -100}%)` }
+        ], timing));
+        heroAnimations[0].addEventListener('finish', () => {
+          if (transition === heroTransition) stopHeroAnimation();
+        }, { once: true });
+      } catch {
+        stopHeroAnimation();
+      }
     }
   };
   if (heroImage) {
     document.querySelector('[data-hero-controls]').hidden = false;
     for (const button of heroButtons) button.addEventListener('click', () => showHeroSlide(Number(button.dataset.heroSlide)));
-    document.querySelector('[data-hero-prev]').addEventListener('click', () => showHeroSlide(heroIndex - 1));
-    document.querySelector('[data-hero-next]').addEventListener('click', () => showHeroSlide(heroIndex + 1));
+    document.querySelector('[data-hero-prev]').addEventListener('click', () => showHeroSlide(heroIndex - 1, -1));
+    document.querySelector('[data-hero-next]').addEventListener('click', () => showHeroSlide(heroIndex + 1, 1));
   }
   const processAccordions = [];
   document.querySelectorAll('.process-steps details').forEach((details) => {
@@ -195,7 +208,14 @@
   setMenu(false);
   toggle.addEventListener('click', () => setMenu(toggle.getAttribute('aria-expanded') !== 'true'));
   nav.addEventListener('click', (event) => {
-    if (event.target.closest('a')) setMenu(false);
+    const link = event.target.closest('a');
+    if (!link) return;
+    setMenu(false);
+    if (!mobile.matches || !link.hash || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    const destination = document.getElementById(link.hash.slice(1));
+    if (!destination) return;
+    if (!destination.hasAttribute('tabindex')) destination.setAttribute('tabindex', '-1');
+    window.requestAnimationFrame(() => destination.focus({ preventScroll: true }));
   });
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') setMenu(false, true);
@@ -216,13 +236,18 @@
   const updateGallery = () => {
     const matches = matchingCards();
     const visible = expanded ? matches : matches.slice(0, 6);
-    cards.forEach((card) => { card.hidden = !visible.includes(card); });
-    visible.forEach((card, index) => card.style.setProperty('--reveal-delay', `${(index % 2) * 70}ms`));
+    cards.forEach((card) => {
+      card.hidden = !visible.includes(card);
+      card.classList.remove('is-wide', 'is-narrow');
+    });
+    if (category === 'all') {
+      visible[0]?.classList.add('is-wide');
+      visible[1]?.classList.add('is-narrow');
+    }
     count.textContent = `${visible.length} of ${matches.length} photos`;
     moreWrap.hidden = matches.length <= 6;
     moreButton.innerHTML = expanded ? 'Show fewer photos <span aria-hidden="true">−</span>' : `View all ${matches.length} photos <span aria-hidden="true">+</span>`;
     moreButton.setAttribute('aria-expanded', String(expanded));
-    observeReveals(visible);
     scheduleScroll();
   };
   document.querySelector('.gallery-controls').hidden = false;
@@ -241,7 +266,10 @@
   moreButton.addEventListener('click', () => {
     expanded = !expanded;
     updateGallery();
-    if (!expanded) document.querySelector('.gallery-controls').scrollIntoView({ block: 'start', behavior: motionReduced() ? 'instant' : 'smooth' });
+    if (!expanded) {
+      filters.find((filter) => filter.dataset.filter === category)?.focus({ preventScroll: true });
+      document.querySelector('.gallery-controls').scrollIntoView({ block: 'start', behavior: motionReduced() ? 'instant' : 'smooth' });
+    }
   });
   updateGallery();
 
@@ -328,7 +356,6 @@
     }
     stopHeroAnimation();
     settleProcessAccordions();
-    configureMotion();
     scheduleScroll();
   };
   if (motionToggle) {
