@@ -59,12 +59,14 @@ The portfolio pairs wide room views with close material details. A short
 horizontal opening sequence and directional hero photo slides lead into varied
 scroll entrances. Photos alternate between side entrances, upward lifts and
 gentle scale reveals, with short paired delays. Process steps and consultation
-details arrive in sequence; mobile uses shorter movement without delays. Native
+details arrive in sequence; mobile uses shorter movement without delays.
+Entrances replay when sections return from either scroll direction, with upward
+travel mirroring the vertical reveals. Native
 expandable introduction steps, gallery filters and a
 keyboard-operated photo viewer make the original project photos easy to browse.
 The lots-and-homes card loads Google Maps on request and retains an external
 viewer link; without JavaScript, the embedded map remains available. Motion
-respects reduced-motion preferences and can be toggled in the footer. The footer
+follows the device's reduced-motion preference without a site setting. The footer
 groups navigation, social links and the Bismarck address, with a large decorative
 wordmark that moves horizontally as the visitor scrolls into the closing section.
 Its links and controls stay stationary. Core

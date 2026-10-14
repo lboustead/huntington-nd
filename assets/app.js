@@ -3,8 +3,7 @@
   const root = document.documentElement;
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const mobile = window.matchMedia('(max-width: 900px)');
-  let motionOverride = null;
-  const motionReduced = () => motionOverride === null ? reducedMotion.matches : !motionOverride;
+  const motionReduced = () => reducedMotion.matches;
   root.classList.toggle('motion-paused', motionReduced());
   root.classList.add('js');
   const header = document.querySelector('.site-header');
@@ -40,13 +39,17 @@
 
   const entranceTargets = Array.from(document.querySelectorAll('[data-enter]'));
   let entranceObserver = null;
-  let entrancesEnabled = false;
   const revealEntrance = (element, immediate = false) => {
     if (!immediate && element.classList.contains('is-entered')) return;
-    if (immediate) element.classList.add('enter-instant');
+    element.classList.toggle('enter-instant', immediate);
     element.classList.toggle('is-entering', !immediate);
     element.classList.add('is-entered');
-    if (entranceObserver) entranceObserver.unobserve(element);
+  };
+  const resetEntrance = (element, fromAbove = false) => {
+    if (element.contains(document.activeElement)) return;
+    element.dataset.enterEdge = fromAbove ? 'above' : 'below';
+    element.classList.add('enter-instant');
+    element.classList.remove('is-entered', 'is-entering');
   };
   const finishEntrance = (event) => {
     if (event.propertyName === 'transform' && event.target.matches('[data-enter]')) {
@@ -58,8 +61,9 @@
   const observeEntrances = (elements = entranceTargets) => {
     if (!entranceObserver) return;
     for (const element of elements) {
-      if (element.hidden || element.classList.contains('is-entered')) {
+      if (element.hidden) {
         entranceObserver.unobserve(element);
+        resetEntrance(element);
       } else {
         entranceObserver.observe(element);
       }
@@ -71,32 +75,42 @@
     for (const element of entranceTargets) element.classList.remove('is-entering');
     if (motionReduced() || !('IntersectionObserver' in window)) {
       root.classList.remove('scroll-motion');
-      entrancesEnabled = false;
       return;
     }
-    if (!entrancesEnabled) {
-      for (const element of entranceTargets) {
-        const bounds = element.getBoundingClientRect();
-        if ((!element.hidden && bounds.bottom > 0 && bounds.top < window.innerHeight)
-          || element.contains(document.activeElement)) {
-          revealEntrance(element, true);
-        } else {
-          element.classList.remove('is-entered', 'enter-instant');
-        }
+    for (const element of entranceTargets) {
+      const bounds = element.getBoundingClientRect();
+      if ((!element.hidden && bounds.bottom > 0 && bounds.top < window.innerHeight)
+        || element.contains(document.activeElement)) {
+        revealEntrance(element, true);
+      } else {
+        resetEntrance(element, !element.hidden && bounds.bottom <= 0);
       }
     }
     entranceObserver = new IntersectionObserver((entries) => {
       for (const entry of entries) {
-        if (entry.isIntersecting && !entry.target.hidden) revealEntrance(entry.target);
+        if (entry.target.hidden) continue;
+        if (entry.isIntersecting) {
+          revealEntrance(entry.target);
+        } else if (entry.boundingClientRect.bottom <= 0
+          || entry.boundingClientRect.top >= window.innerHeight) {
+          resetEntrance(entry.target, entry.boundingClientRect.bottom <= 0);
+        }
       }
-    }, { rootMargin: '0px 0px -36px 0px', threshold: 0.12 });
+    }, { threshold: 0 });
     root.classList.add('scroll-motion');
-    entrancesEnabled = true;
     observeEntrances();
   };
   document.addEventListener('focusin', (event) => {
     const entrance = event.target.closest('[data-enter]');
     if (entrance) revealEntrance(entrance, true);
+  });
+  document.addEventListener('focusout', (event) => {
+    const entrance = event.target.closest('[data-enter]');
+    if (!entrance || !entranceObserver || entrance.contains(event.relatedTarget)) return;
+    const bounds = entrance.getBoundingClientRect();
+    if (bounds.bottom <= 0 || bounds.top >= window.innerHeight) {
+      resetEntrance(entrance, bounds.bottom <= 0);
+    }
   });
 
   const heroImage = document.querySelector('.hero-image');
@@ -405,33 +419,13 @@
     }, { once: true });
   }
 
-  const motionToggle = document.querySelector('#motion-toggle');
-  const motionToggleLabel = document.querySelector('#motion-toggle-label');
   const syncMotion = () => {
-    const enabled = !motionReduced();
-    root.classList.toggle('motion-opt-in', motionOverride === true);
-    root.classList.toggle('motion-paused', !enabled);
-    if (motionToggle) {
-      motionToggle.hidden = false;
-      motionToggle.setAttribute('aria-pressed', String(enabled));
-      motionToggle.setAttribute('aria-label', 'Page motion');
-      motionToggle.title = `Turn page motion ${enabled ? 'off' : 'on'}`;
-    }
-    if (motionToggleLabel) {
-      motionToggleLabel.hidden = false;
-      motionToggleLabel.textContent = `Motion ${enabled ? 'on' : 'off'}`;
-    }
+    root.classList.toggle('motion-paused', motionReduced());
     stopHeroAnimation();
     settleProcessAccordions();
     configureEntrances();
     scheduleScroll();
   };
-  if (motionToggle) {
-    motionToggle.addEventListener('click', () => {
-      motionOverride = motionReduced();
-      syncMotion();
-    });
-  }
   reducedMotion.addEventListener('change', syncMotion);
   syncMotion();
   document.querySelector('#copyright-year').textContent = String(new Date().getFullYear());

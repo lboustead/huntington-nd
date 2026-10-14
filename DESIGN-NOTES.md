@@ -37,7 +37,7 @@ More project photographs in paired rows
 Lots and homes                          Load the real location map
 Getting started                         Three expandable steps
 Consultation                            Verified contact details
-Wordmark                                Social links / motion preference
+Wordmark                                Social links / back to top
 ```
 
 The plan was reviewed against the previous split hero. A wide image now
@@ -61,8 +61,10 @@ upward, with short 90/180 ms delays connecting related items.
 
 Side entrances travel 88 pixels over 650 ms; upward entrances travel 42 pixels
 over 550 ms; scale reveals move 24 pixels from 96.5% size over 700 ms. Mobile
-uses 32/26/18 pixels, a smaller 98% scale reveal and no stagger delays. Each
-surface enters once while motion stays enabled. The palette, typography and
+uses 32/26/18 pixels, a smaller 98% scale reveal and no stagger delays. Surfaces
+replay after leaving the viewport and returning from either direction. Vertical
+reveals mirror their offset when returning from the top as visitors scroll up.
+The palette, typography and
 layout stay consistent; variety comes from the relationships between the actual
 photos and content, without bounce or rotation. There is no automatic carousel.
 Manual featured-photo changes slide
@@ -80,16 +82,18 @@ Compositor hints apply only during an entrance and clear when it ends or is
 interrupted. No per-frame JavaScript is added for the new entrance treatments.
 Section boundaries clip the movement without creating page-wide horizontal
 scrollbars, with room for keyboard focus rings. Focusing a control inside an
-entering surface immediately makes that surface visible. Gallery filters and
-expansion register newly displayed photos. Turning motion off shows every
-surface immediately; enabling it keeps on-screen content stable and prepares
-off-screen surfaces for their next entrance. JavaScript-disabled browsing or an
+entering surface immediately makes that surface visible, and focused surfaces
+stay visible. The observer remains attached and resets a surface instantly only
+after its entire box leaves the viewport, avoiding visible exit jumps or flicker
+at the edge. Gallery filters and expansion register newly displayed photos.
+JavaScript-disabled browsing or an
 unsupported observer API leaves content visible.
 
 Motion starts on for each new visit unless the device requests reduced motion.
 System reduced-motion preferences disable animation, including live preference
-changes. The footer control can override motion for the current visit; turning
-it off does not carry over to the next page load. Core
+changes. There is no page-level motion toggle or stored motion preference. When
+the device switches back to normal motion, visible content stays in place and
+off-screen content prepares for its next entrance. Core
 content, contact actions and project photo links work without JavaScript.
 Motion uses CSS and existing native Web Animations APIs. No application
 dependencies, remote scripts, or skill files are added.
@@ -108,7 +112,7 @@ Company / consultation       Explore       Follow along       Visit us
 
                Large Huntington signature moves sideways with scrolling
 
-Copyright                                          Motion control / back to top
+Copyright                                                        Back to top
 ```
 
 The earlier movement required a page load or a photo-control action. This
@@ -116,8 +120,8 @@ refinement makes horizontal movement visible during normal scrolling: the
 signature travels left across its clipped band as the footer reaches the
 viewport, settling at its natural centered position at the document bottom.
 It travels up to 280 pixels on desktop and 144 pixels on mobile, and reverses
-naturally if the visitor scrolls back. It has no autoplay loop. Reduced motion,
-the page motion control and JavaScript-disabled browsing retain a static footer.
+naturally if the visitor scrolls back. It has no autoplay loop. Reduced motion
+and JavaScript-disabled browsing retain a static footer.
 The large signature is decorative; the complete company name stays available
 as a stationary link. The columns give the footer useful destinations rather
 than leaving the wordmark to carry the entire section.
