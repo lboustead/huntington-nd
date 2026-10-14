@@ -14,7 +14,7 @@ for (const entry of entries) {
   if (!publicNames.has(entry.name) && !entry.name.endsWith('.html')) continue;
   await cp(join(project, entry.name), join(output, entry.name), { recursive: true });
 }
-const contactSource = await readFile(join(project, 'functions', 'api', 'contact.js'), 'utf8');
+const contactSource = (await readFile(join(project, 'functions', 'api', 'contact.js'), 'utf8')).replace(/^export(?= async function onRequest\b)/m, '');
 const workerEntry = `
 
 export default {
@@ -28,9 +28,10 @@ export default {
 };
 `;
 await writeFile(join(output, '_worker.js'), contactSource + workerEntry);
+await writeFile(join(output, '.assetsignore'), '_worker.js\n_routes.json\n');
 await writeFile(join(output, '_routes.json'), JSON.stringify({ version: 1, include: ['/api/contact', '/api/contact/'], exclude: [] }, null, 2) + '\n');
 const validation = spawnSync(process.execPath, [join(project, 'scripts', 'check.mjs')], { cwd: output, stdio: 'inherit' });
 if (validation.status !== 0) process.exit(validation.status || 1);
 const workerValidation = spawnSync(process.execPath, [join(project, 'scripts', 'worker.test.mjs')], { cwd: project, stdio: 'inherit' });
 if (workerValidation.status !== 0) process.exit(workerValidation.status || 1);
-console.log('Pages deployment built in dist/, including the contact API in advanced-mode _worker.js. No runtime dependencies.');
+console.log('Cloudflare deployment built in dist/, with a private Worker entry and native static assets. No runtime dependencies.');

@@ -1,21 +1,22 @@
 # Contact delivery
 
-The contact form for Huntington Builders submits to the Cloudflare Pages Function at
+The contact form for Huntington Builders submits to the Cloudflare Worker at
 `/api/contact`. It sends through the owner's Google Workspace mailbox,
 `noreply@huntingtonnd.com`, using an app password over TLS. Recipients default to
 `builders@huntingtonnd.com`; the visitor's email is the reply-to address.
 
-## Enable delivery in Cloudflare Pages
+## Enable delivery on the existing Worker
 
-Keep build command `npm run build` and output directory `dist`. The source
-handler in `functions/api/contact.js` is packaged into the self-contained
-`dist/_worker.js` required by Pages advanced mode. `dist/_routes.json` invokes
-that worker only for the contact endpoint; static headers, redirects and the
-custom 404 remain native. Upload the complete build output including these
-files. The worker uses Cloudflare's native TCP sockets, with no SMTP package
-or separate server.
+The production deployment is the existing Workers Builds project `huntington-nd`.
+Keep build command `npm run build` and its Wrangler deployment command.
+`wrangler.jsonc` points to the generated `dist/_worker.js`, binds native assets
+and runs the contact API first. `dist/.assetsignore` prevents uploading runtime
+code as a public asset; include it when transferring the complete build output.
+The Worker uses Cloudflare's native TCP sockets, with no SMTP package or
+separate server. The same output also supports Pages advanced mode through
+`_worker.js` and API-only `_routes.json`.
 
-In this Pages project's **Settings → Variables and Secrets**, set:
+In this Worker's **Settings → Variables and Secrets**, set:
 
 | Name | Value |
 | --- | --- |
@@ -28,12 +29,13 @@ In this Pages project's **Settings → Variables and Secrets**, set:
 
 Google displays app passwords in groups; paste the 16 characters without the
 display spaces. Keep the password in secure settings, outside browser code and
-Git. Configure production and preview separately, then redeploy the current
-commit to apply the bindings. A sending API key from another provider is not
+Git. Configure the production Worker and any separate preview deployment, then
+redeploy the current commit to apply the bindings. `keep_vars` retains existing
+dashboard variables, and Wrangler preserves encrypted secrets. A sending API key from another provider is not
 needed. An app password must be valid for this mailbox; its existence cannot be
 verified from public mail records.
 
-The domain's public MX records identify Google Workspace. The Function requires
+The domain's public MX records identify Google Workspace. The Worker requires
 TLS on port 465 or STARTTLS before authentication on port 587, verifies the SMTP
 server's responses and only reports success after the server accepts the message.
 SMTP acceptance does not guarantee inbox delivery. Test receipt with a message
@@ -59,7 +61,8 @@ is a stable retry token; client clock differences do not block valid messages.
 The endpoint checks origin, body size/types and a hidden honeypot. Cloudflare
 rate limiting for `POST /api/contact` can supplement these checks for abuse.
 
-References: [Pages Functions](https://developers.cloudflare.com/pages/functions/get-started/),
+References: [Workers static assets](https://developers.cloudflare.com/workers/static-assets/),
+[Pages advanced mode](https://developers.cloudflare.com/pages/functions/advanced-mode/),
 [Cloudflare TCP sockets](https://developers.cloudflare.com/workers/runtime-apis/tcp-sockets/),
 [Google Workspace SMTP](https://support.google.com/a/answer/176600),
 [Google app passwords](https://support.google.com/accounts/answer/185833).

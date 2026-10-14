@@ -1,14 +1,17 @@
 import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
 import { test } from 'node:test';
-import worker from '../dist/_worker.js';
+import * as entry from '../dist/_worker.js';
 
 const origin = 'https://huntingtonnd.com';
+const workerName = 'huntington-nd';
+const worker = entry.default;
 const noAssets = { ASSETS: { fetch() { throw new Error('Contact API must not delegate to static assets'); } } };
 const valid = () => ({ name: 'Packaging test', email: 'test@example.com', interest: 'Something else', message: 'No email should be sent by this test.', website: '', startedAt: Date.now() });
 const post = body => new Request(origin + '/api/contact', { method: 'POST', headers: { Origin: origin, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
 
 test('The published Worker artifact owns canonical, trailing-slash, and queried contact routes', async () => {
+  assert.deepEqual(Object.keys(entry), ['default']);
   for (const path of ['/api/contact', '/api/contact/', '/api/contact?source=footer']) {
     const response = await worker.fetch(new Request(origin + path), noAssets);
     assert.equal(response.status, 405);
@@ -16,6 +19,28 @@ test('The published Worker artifact owns canonical, trailing-slash, and queried 
     assert.match(response.headers.get('Content-Type'), /^application\/json/);
     assert.equal((await response.json()).ok, false);
   }
+});
+
+test('The existing Workers deployment configures the private entry and routes the API before native assets', async () => {
+  const config = JSON.parse(await readFile(new URL('../wrangler.jsonc', import.meta.url), 'utf8'));
+  assert.equal(config.name, workerName);
+  assert.equal(config.main.replace(/^\.\//, ''), 'dist/_worker.js');
+  assert.equal(config.keep_vars, true);
+  assert.equal(config.assets.directory.replace(/^\.\//, ''), 'dist');
+  assert.equal(config.assets.binding, 'ASSETS');
+  assert.deepEqual(config.assets.run_worker_first, ['/api/contact', '/api/contact/*']);
+  assert.equal(config.assets.not_found_handling, '404-page');
+  const ignored = (await readFile(new URL('../dist/.assetsignore', import.meta.url), 'utf8')).trim().split('\n');
+  assert.ok(ignored.includes('_worker.js'));
+  assert.ok(ignored.includes('_routes.json'));
+  assert.equal(ignored.includes('_headers'), false);
+  assert.equal(ignored.includes('_redirects'), false);
+  const assets = (await readdir(new URL('../dist/', import.meta.url))).filter(name => !name.startsWith('.') && !ignored.includes(name));
+  assert.equal(assets.includes('_worker.js'), false);
+  assert.equal(assets.includes('_routes.json'), false);
+  assert.ok(assets.includes('index.html'));
+  assert.ok(assets.includes('404.html'));
+  assert.ok(assets.includes('_headers'));
 });
 
 test('The generated production handler retains origin and field validation', async () => {

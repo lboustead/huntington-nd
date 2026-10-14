@@ -1,60 +1,69 @@
-# Cloudflare Pages handoff
+# Cloudflare deployment
 
-Target domain: **huntingtonnd.com**  
+Target domain: **huntingtonnd.com**
 GitHub repository: **https://github.com/lboustead/huntington-nd**
+Existing production Worker: **`huntington-nd`**
 
-## Connect the code
+## Existing Workers Builds pipeline
 
-1. In Cloudflare Pages, connect the GitHub repository and choose branch `main`.
-2. Select framework **None**, build command `npm run build`, output directory
-   `dist`, and leave the root directory blank. Use Node 22.
-3. Open the successful `pages.dev` deployment. Check mobile navigation, photos,
-   contact actions, and linked third-party services before switching domains.
-4. Add `huntingtonnd.com` and `www.huntingtonnd.com` under the Pages project's **Custom domains**
-   settings and follow the DNS instructions Cloudflare gives for this project.
-5. Confirm HTTPS and both hostnames resolve to the new site. If you want one
-   hostname to redirect to the other, configure that domain redirect in
-   Cloudflare; page-path redirects alone do not configure hostname redirects.
+The Cloudflare deployment checks identify Workers Builds for this project.
+Keep the existing Git connection, branch `main`, build command `npm run build`
+and Wrangler deployment command. No new application or hosting migration is
+required.
 
-## Preserve existing domain services
+`wrangler.jsonc` matches the existing Worker name and configures:
 
-Moving the registrar, moving DNS hosting, and changing the website are separate
-operations. Export or record the current DNS zone before changing nameservers.
-Preserve the MX records and TXT records used for email (including SPF, DKIM, and
-DMARC), along with any service-verification and other subdomain records. Website
-code does not recreate DNS records or mail service.
+- Private runtime entry: `dist/_worker.js`.
+- Native static assets: `dist`, bound as `ASSETS`.
+- Worker-first routes: `/api/contact` and `/api/contact/*`.
+- Custom static 404 handling and preservation of dashboard variables.
 
-Domain transfers and DNS changes have not been performed as part of this code
-work. Connect and review the Pages deployment first, then make the domain changes
-when ready. Keep the old hosting available until you have checked the new site.
+The build writes `.assetsignore` inside `dist` to exclude `_worker.js` and
+Pages-only `_routes.json` from public asset upload. Preserve this dotfile when
+transferring the complete build output. The GitHub artifact includes hidden
+files; the build whitelist excludes environment files, tests and local tooling.
+Native `_headers` and `_redirects`, when present, stay with static assets.
 
-## Before the cutover
+After the Cloudflare build succeeds, `GET /api/contact` should return JSON with
+status **405** and `Allow: POST`. A 404 means the runtime route is not deployed.
+Also check a normal page, a local asset and a missing URL; the latter should
+return the custom 404. GitHub's validation build and Cloudflare's production
+build are separate checks.
 
-- Confirm the phone numbers, email addresses, and published service details.
-- Verify the contact form, phone/SMS links and linked map pages.
-- Run `npm ci` and `npm run build`; review the GitHub Actions build result.
-- Confirm `/robots.txt`, `/sitemap.xml`, and a missing URL return appropriate
-  content on Pages. A missing URL should return the custom 404 page.
-- Read `CONTENT-SOURCES.md` for any business-specific details needing review.
+## Pages-compatible output
 
-## Contact Function
+The same `dist` output supports Pages advanced mode. For a Pages project, use
+build command `npm run build` and output directory `dist`, retaining the generated
+`_worker.js` and API-only `_routes.json`. Pages recognizes the runtime file and
+provides `ASSETS` automatically. Root `functions/` contains the shared source;
+its compilation is not required when publishing the generated entry.
 
-Follow [CONTACT-SETUP.md](CONTACT-SETUP.md) to configure Google Workspace SMTP in this Pages
-project. Static pages deploy as before. The build packages `functions/api/contact.js`
-into Pages advanced-mode `dist/_worker.js`, alongside API-only routing, so the
-contact handler is included even when only the build output is uploaded. Email delivery requires the SMTP app-password binding; redeploy after changing those settings.
+## Contact delivery
+
+Follow [CONTACT-SETUP.md](CONTACT-SETUP.md) to configure Google Workspace SMTP on
+the existing production Worker. The app password is an encrypted `SMTP_PASSWORD`
+secret. Sender defaults to `noreply@huntingtonnd.com`; recipient defaults to
+`builders@huntingtonnd.com`. Redeploy after changing bindings, then intentionally submit a
+message and confirm receipt. Runtime availability does not establish mailbox
+authentication or delivery.
+
+## Preserve domain services
+
+Keep existing custom domains and DNS unchanged. Preserve MX, SPF, DKIM, DMARC
+and service-verification records; website code does not recreate mail service.
+If domain settings need changes later, record the existing zone first and treat
+that handoff separately from a code deployment.
 
 ## Updates and rollback
 
-Once connected, pushing a commit to `main` triggers a Pages production build.
-Use branches for preview deployments. To undo a code change, revert that commit
-and push, or select an earlier successful production deployment in Cloudflare.
-DNS and registrar changes require their own separate rollback decisions.
+Pushing to `main` triggers the connected production build. Revert a commit and
+push to undo a code change, or use an earlier successful Cloudflare deployment.
+Keep business content, availability and contact details current; see
+[CONTENT-SOURCES.md](CONTENT-SOURCES.md).
 
 ## Cloudflare documentation
 
-- [Deploy static HTML](https://developers.cloudflare.com/pages/framework-guides/deploy-anything/)
-- [GitHub integration](https://developers.cloudflare.com/pages/configuration/git-integration/github-integration/)
-- [Custom domains](https://developers.cloudflare.com/pages/configuration/custom-domains/)
-- [Redirects](https://developers.cloudflare.com/pages/configuration/redirects/)
-- [Headers](https://developers.cloudflare.com/pages/configuration/headers/)
+- [Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/)
+- [Workers static assets](https://developers.cloudflare.com/workers/static-assets/)
+- [Asset exclusions](https://developers.cloudflare.com/workers/static-assets/configuration/)
+- [Pages advanced mode](https://developers.cloudflare.com/pages/functions/advanced-mode/)

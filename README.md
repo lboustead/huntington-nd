@@ -1,9 +1,9 @@
 # Huntington Builders
 
-Modern Bismarck home builder website for Huntington Builders, built for Cloudflare Pages.
+Modern Bismarck home builder website for Huntington Builders, built for Cloudflare.
 
 Source for **https://huntingtonnd.com**. The site uses plain HTML, CSS and JavaScript
-with local images and fonts. A dependency-free Cloudflare Pages Function handles
+with local images and fonts. A dependency-free Cloudflare Worker handles
 `POST /api/contact` and sends inquiries through Google Workspace SMTP. There is no database or
 application package dependency. Node validates, builds and previews the site.
 
@@ -27,28 +27,24 @@ npm run preview
 image alt attributes, and local asset and anchor references. The GitHub Actions
 workflow runs the build and retains the static output as an artifact.
 
-## Deploy on Cloudflare Pages
+## Cloudflare deployment
 
-Connect this GitHub repository through **Workers & Pages → Create application →
-Pages → Connect to Git** (dashboard wording may vary). Grant the Cloudflare GitHub
-app access to this repository.
+Production uses the existing **Workers Builds** project `huntington-nd`, connected to
+`lboustead/huntington-nd` on branch `main`. Keep build command `npm run build` and the
+existing Wrangler deployment command. `wrangler.jsonc` matches that Worker name,
+selects `dist/_worker.js` as the private runtime entry and binds static files to
+`ASSETS`. Only contact routes run the Worker before assets; other pages retain
+native headers, redirects and the custom 404.
 
-| Setting | Value |
-| --- | --- |
-| Repository | `lboustead/huntington-nd` |
-| Production branch | `main` |
-| Framework preset | `None` |
-| Build command | `npm run build` |
-| Build output directory | `dist` |
-| Root directory | Leave blank |
-| Node version | `22` (the repository includes `.node-version`) |
-| Function configuration | `SMTP_PASSWORD` and optional mail settings; see [CONTACT-SETUP.md](CONTACT-SETUP.md) |
+The build generates `dist/.assetsignore` so the Worker entry and Pages routing
+metadata cannot be uploaded as public assets. Preserve this file when transferring
+the complete build output. Existing dashboard variables are retained with
+`keep_vars`; configure the SMTP app-password secret on this Worker as described
+in [CONTACT-SETUP.md](CONTACT-SETUP.md).
 
-The first deployment gets a `pages.dev` address. Review that deployment before
-attaching `huntingtonnd.com` and `www.huntingtonnd.com` through the Pages project's **Custom
-domains** settings. Subsequent commits to `main` deploy automatically after the
-Git integration is connected. See [DEPLOYMENT.md](DEPLOYMENT.md) for the domain
-handoff checklist.
+The same output remains compatible with Pages advanced mode: build with
+`npm run build`, publish all of `dist`, and retain `_worker.js` and `_routes.json`.
+See [DEPLOYMENT.md](DEPLOYMENT.md) for runtime checks and domain-service notes.
 
 ## Editing
 
@@ -78,16 +74,16 @@ package dependencies. The contact endpoint requires the Google Workspace SMTP co
 - `index.html`: copy, section order, contact details, links, and metadata.
 - `assets/`: styles, browser interactions, photos, icons, and local fonts.
 - `robots.txt` and `sitemap.xml`: production crawl settings.
-- `_headers`: Cloudflare Pages response headers.
+- `_headers`: native Cloudflare asset response headers.
 - `_redirects`, when present: mappings for known legacy paths.
 - `404.html`: static error page, also preventing Pages' implicit SPA fallback.
 - `scripts/`: dependency-free local tooling; excluded from the deployed output.
 
-`dist/` is generated and ignored by Git. The build copies public HTML, assets and Pages configuration to `dist/`.
-The source handler stays in `functions/api/contact.js`. The build emits a
-self-contained Pages advanced-mode `dist/_worker.js`; API-only `_routes.json`
-keeps static pages on the native asset service. Documentation, tests and local
-tooling stay outside the public files.
+`dist/` is generated and ignored by Git. The source handler stays in
+`functions/api/contact.js`; the build packages it into the default-only Worker
+entry. Public HTML and assets are copied separately, with Workers upload
+exclusions and Pages API routing metadata. Documentation, tests, environment
+files and local tooling stay outside the deployment output.
 
 ## Contact and service integrations
 

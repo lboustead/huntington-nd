@@ -22,4 +22,5 @@ jobs:
         with:
           name: static-site
           path: dist
+          include-hidden-files: true
           retention-days: 7
