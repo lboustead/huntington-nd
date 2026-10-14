@@ -219,11 +219,17 @@ p{color:var(--muted)}
 @keyframes intro-enter{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
 @keyframes hero-enter{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 @keyframes surface-in{from{opacity:.4;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-.approach,.work>.container,.availability>.container,.contact-grid{overflow:clip;overflow-clip-margin:8px}
+.approach,.work>.container,.availability>.container,.build-process,.contact-grid{overflow:clip;overflow-clip-margin:8px}
+[data-enter]{--enter-x:0px;--enter-y:0px;--enter-scale:1;--enter-delay:0ms;--enter-duration:650ms;transform-origin:center}
 [data-enter=left]{--enter-x:-88px}
 [data-enter=right]{--enter-x:88px}
-.scroll-motion [data-enter]{opacity:0;transform:translateX(var(--enter-x))}
-.scroll-motion [data-enter].is-entered{opacity:1;transform:translateX(0);transition:opacity .65s ease,transform .65s cubic-bezier(.16,1,.3,1)}
+[data-enter=up]{--enter-y:42px;--enter-duration:550ms}
+[data-enter=settle]{--enter-y:24px;--enter-scale:.965;--enter-duration:700ms}
+[data-enter-step="1"]{--enter-delay:90ms}
+[data-enter-step="2"]{--enter-delay:180ms}
+.scroll-motion [data-enter]{opacity:0;transform:translate(var(--enter-x),var(--enter-y)) scale(var(--enter-scale))}
+.scroll-motion [data-enter].is-entered{opacity:1;transform:translate(0,0) scale(1);transition:opacity var(--enter-duration) ease var(--enter-delay),transform var(--enter-duration) cubic-bezier(.16,1,.3,1) var(--enter-delay)}
+.scroll-motion [data-enter].is-entering{will-change:transform,opacity}
 .scroll-motion [data-enter].enter-instant{transition:none}
 .motion-paused [data-enter]{opacity:1!important;transform:none!important}
 @media(prefers-reduced-motion:reduce){:root:not(.motion-opt-in) [data-enter]{opacity:1!important;transform:none!important}}
@@ -290,6 +296,9 @@ html.motion-paused{scroll-behavior:auto}
 @media(max-width:680px){
  [data-enter=left]{--enter-x:-32px}
  [data-enter=right]{--enter-x:32px}
+ [data-enter=up]{--enter-y:26px;--enter-duration:450ms}
+ [data-enter=settle]{--enter-y:18px;--enter-scale:.98;--enter-duration:550ms}
+ .scroll-motion [data-enter].is-entered{transition-delay:0s}
  .container{width:calc(100% - 40px)}
  .site-header{padding-inline:20px;min-height:76px}
  .brand{gap:10px;min-height:48px}

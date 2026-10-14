@@ -42,10 +42,19 @@
   let entranceObserver = null;
   let entrancesEnabled = false;
   const revealEntrance = (element, immediate = false) => {
+    if (!immediate && element.classList.contains('is-entered')) return;
     if (immediate) element.classList.add('enter-instant');
+    element.classList.toggle('is-entering', !immediate);
     element.classList.add('is-entered');
     if (entranceObserver) entranceObserver.unobserve(element);
   };
+  const finishEntrance = (event) => {
+    if (event.propertyName === 'transform' && event.target.matches('[data-enter]')) {
+      event.target.classList.remove('is-entering');
+    }
+  };
+  document.addEventListener('transitionend', finishEntrance);
+  document.addEventListener('transitioncancel', finishEntrance);
   const observeEntrances = (elements = entranceTargets) => {
     if (!entranceObserver) return;
     for (const element of elements) {
@@ -59,6 +68,7 @@
   const configureEntrances = () => {
     if (entranceObserver) entranceObserver.disconnect();
     entranceObserver = null;
+    for (const element of entranceTargets) element.classList.remove('is-entering');
     if (motionReduced() || !('IntersectionObserver' in window)) {
       root.classList.remove('scroll-motion');
       entrancesEnabled = false;
@@ -277,6 +287,7 @@
   mobile.addEventListener('change', () => setMenu(false));
 
   const cards = Array.from(document.querySelectorAll('.project-card'));
+  const galleryEntrances = ['left', 'right', 'up', 'settle', 'right', 'left'];
   const filters = Array.from(document.querySelectorAll('.filter'));
   const count = document.querySelector('.gallery-count');
   const moreWrap = document.querySelector('.gallery-more-wrap');
@@ -295,7 +306,10 @@
       visible[0]?.classList.add('is-wide');
       visible[1]?.classList.add('is-narrow');
     }
-    visible.forEach((card, index) => { card.dataset.enter = index % 2 === 0 ? 'left' : 'right'; });
+    visible.forEach((card, index) => {
+      card.dataset.enter = galleryEntrances[index % galleryEntrances.length];
+      card.dataset.enterStep = String(index % 2);
+    });
     count.textContent = `${visible.length} of ${matches.length} photos`;
     moreWrap.hidden = matches.length <= 6;
     moreButton.innerHTML = expanded ? 'Show fewer photos <span aria-hidden="true">−</span>' : `View all ${matches.length} photos <span aria-hidden="true">+</span>`;

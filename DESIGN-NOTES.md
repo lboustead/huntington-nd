@@ -51,11 +51,21 @@ The logo stays small, replaceable, and unchanged.
 
 One short page-load sequence introduces the headline and photograph. The
 headline settles in from the left, while the short introduction moves in from
-the right. As visitors scroll, the approach photo and copy, portfolio heading
-and photos, lots-and-homes panels, and consultation panels enter from alternating
-sides. Desktop entrances travel 88 pixels over 650 ms; mobile entrances travel
-32 pixels. Each surface enters once while motion stays enabled. There is no
-automatic carousel. Manual featured-photo changes slide
+the right. The approach photo and copy enter from opposite sides, with the copy
+following 90 ms later. The portfolio heading lifts into place, then photo rows
+alternate between opposing side entrances, upward lifts and a gentle scale
+reveal. The direction pattern follows the current filtered photo order, with
+90 ms between paired photos. The lots copy lifts while its map settles into
+place. The process introduction, three steps and consultation details arrive
+upward, with short 90/180 ms delays connecting related items.
+
+Side entrances travel 88 pixels over 650 ms; upward entrances travel 42 pixels
+over 550 ms; scale reveals move 24 pixels from 96.5% size over 700 ms. Mobile
+uses 32/26/18 pixels, a smaller 98% scale reveal and no stagger delays. Each
+surface enters once while motion stays enabled. The palette, typography and
+layout stay consistent; variety comes from the relationships between the actual
+photos and content, without bounce or rotation. There is no automatic carousel.
+Manual featured-photo changes slide
 horizontally in the selected direction over 480 ms after the next image decodes.
 The outgoing image is a temporary decorative layer, removed on completion or
 interruption. Previous/next controls keep their direction even at the ends.
@@ -66,6 +76,8 @@ Mobile menu closure moves focus to a visible destination. The map loads on
 request, with an external viewer fallback and a normal embed without JavaScript.
 
 Scroll entrances use IntersectionObserver and CSS transform/opacity transitions.
+Compositor hints apply only during an entrance and clear when it ends or is
+interrupted. No per-frame JavaScript is added for the new entrance treatments.
 Section boundaries clip the movement without creating page-wide horizontal
 scrollbars, with room for keyboard focus rings. Focusing a control inside an
 entering surface immediately makes that surface visible. Gallery filters and
@@ -74,8 +86,10 @@ surface immediately; enabling it keeps on-screen content stable and prepares
 off-screen surfaces for their next entrance. JavaScript-disabled browsing or an
 unsupported observer API leaves content visible.
 
+Motion starts on for each new visit unless the device requests reduced motion.
 System reduced-motion preferences disable animation, including live preference
-changes. The footer control can override motion for the current visit. Core
+changes. The footer control can override motion for the current visit; turning
+it off does not carry over to the next page load. Core
 content, contact actions and project photo links work without JavaScript.
 Motion uses CSS and existing native Web Animations APIs. No application
 dependencies, remote scripts, or skill files are added.

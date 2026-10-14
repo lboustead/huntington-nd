@@ -56,10 +56,11 @@ The palette, type, layout and interaction details are documented in
 [DESIGN-NOTES.md](DESIGN-NOTES.md). The homepage opens with a large exterior
 photograph, crisp charcoal typography and a small, easily replaceable logo.
 The portfolio pairs wide room views with close material details. A short
-horizontal opening sequence, directional hero photo slides and scroll-triggered
-side entrances make movement visible throughout the page. Photos, text panels
-and the consultation area enter as they come into view. Native expandable
-introduction steps, gallery filters and a
+horizontal opening sequence and directional hero photo slides lead into varied
+scroll entrances. Photos alternate between side entrances, upward lifts and
+gentle scale reveals, with short paired delays. Process steps and consultation
+details arrive in sequence; mobile uses shorter movement without delays. Native
+expandable introduction steps, gallery filters and a
 keyboard-operated photo viewer make the original project photos easy to browse.
 The lots-and-homes card loads Google Maps on request and retains an external
 viewer link; without JavaScript, the embedded map remains available. Motion
