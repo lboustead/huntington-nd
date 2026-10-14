@@ -219,6 +219,14 @@ p{color:var(--muted)}
 @keyframes intro-enter{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
 @keyframes hero-enter{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 @keyframes surface-in{from{opacity:.4;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.approach,.work>.container,.availability>.container,.contact-grid{overflow:clip;overflow-clip-margin:8px}
+[data-enter=left]{--enter-x:-88px}
+[data-enter=right]{--enter-x:88px}
+.scroll-motion [data-enter]{opacity:0;transform:translateX(var(--enter-x))}
+.scroll-motion [data-enter].is-entered{opacity:1;transform:translateX(0);transition:opacity .65s ease,transform .65s cubic-bezier(.16,1,.3,1)}
+.scroll-motion [data-enter].enter-instant{transition:none}
+.motion-paused [data-enter]{opacity:1!important;transform:none!important}
+@media(prefers-reduced-motion:reduce){:root:not(.motion-opt-in) [data-enter]{opacity:1!important;transform:none!important}}
 .motion-paused *,.motion-paused *::before,.motion-paused *::after{animation:none!important;transition:none!important}
 .motion-paused .footer-signature-track{transform:none!important}
 html.motion-paused{scroll-behavior:auto}
@@ -280,6 +288,8 @@ html.motion-paused{scroll-behavior:auto}
  .footer-signature-track{gap:24px}
 }
 @media(max-width:680px){
+ [data-enter=left]{--enter-x:-32px}
+ [data-enter=right]{--enter-x:32px}
  .container{width:calc(100% - 40px)}
  .site-header{padding-inline:20px;min-height:76px}
  .brand{gap:10px;min-height:48px}

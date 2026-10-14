@@ -38,6 +38,57 @@
   window.addEventListener('load', scheduleScroll, { once: true });
   updateScroll();
 
+  const entranceTargets = Array.from(document.querySelectorAll('[data-enter]'));
+  let entranceObserver = null;
+  let entrancesEnabled = false;
+  const revealEntrance = (element, immediate = false) => {
+    if (immediate) element.classList.add('enter-instant');
+    element.classList.add('is-entered');
+    if (entranceObserver) entranceObserver.unobserve(element);
+  };
+  const observeEntrances = (elements = entranceTargets) => {
+    if (!entranceObserver) return;
+    for (const element of elements) {
+      if (element.hidden || element.classList.contains('is-entered')) {
+        entranceObserver.unobserve(element);
+      } else {
+        entranceObserver.observe(element);
+      }
+    }
+  };
+  const configureEntrances = () => {
+    if (entranceObserver) entranceObserver.disconnect();
+    entranceObserver = null;
+    if (motionReduced() || !('IntersectionObserver' in window)) {
+      root.classList.remove('scroll-motion');
+      entrancesEnabled = false;
+      return;
+    }
+    if (!entrancesEnabled) {
+      for (const element of entranceTargets) {
+        const bounds = element.getBoundingClientRect();
+        if ((!element.hidden && bounds.bottom > 0 && bounds.top < window.innerHeight)
+          || element.contains(document.activeElement)) {
+          revealEntrance(element, true);
+        } else {
+          element.classList.remove('is-entered', 'enter-instant');
+        }
+      }
+    }
+    entranceObserver = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting && !entry.target.hidden) revealEntrance(entry.target);
+      }
+    }, { rootMargin: '0px 0px -36px 0px', threshold: 0.12 });
+    root.classList.add('scroll-motion');
+    entrancesEnabled = true;
+    observeEntrances();
+  };
+  document.addEventListener('focusin', (event) => {
+    const entrance = event.target.closest('[data-enter]');
+    if (entrance) revealEntrance(entrance, true);
+  });
+
   const heroImage = document.querySelector('.hero-image');
   const heroSlides = [
     { src: '/assets/project-11.jpg', alt: 'A house with a stone facade, timber accents and a landscaped front yard.', caption: 'Stone, timber, and a place to call home.' },
@@ -244,10 +295,12 @@
       visible[0]?.classList.add('is-wide');
       visible[1]?.classList.add('is-narrow');
     }
+    visible.forEach((card, index) => { card.dataset.enter = index % 2 === 0 ? 'left' : 'right'; });
     count.textContent = `${visible.length} of ${matches.length} photos`;
     moreWrap.hidden = matches.length <= 6;
     moreButton.innerHTML = expanded ? 'Show fewer photos <span aria-hidden="true">−</span>' : `View all ${matches.length} photos <span aria-hidden="true">+</span>`;
     moreButton.setAttribute('aria-expanded', String(expanded));
+    observeEntrances(cards);
     scheduleScroll();
   };
   document.querySelector('.gallery-controls').hidden = false;
@@ -356,6 +409,7 @@
     }
     stopHeroAnimation();
     settleProcessAccordions();
+    configureEntrances();
     scheduleScroll();
   };
   if (motionToggle) {

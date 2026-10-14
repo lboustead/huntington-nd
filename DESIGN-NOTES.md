@@ -51,8 +51,11 @@ The logo stays small, replaceable, and unchanged.
 
 One short page-load sequence introduces the headline and photograph. The
 headline settles in from the left, while the short introduction moves in from
-the right. Other sections are visible immediately, with no repeated scroll
-entrances or automatic carousels. Manual featured-photo changes slide
+the right. As visitors scroll, the approach photo and copy, portfolio heading
+and photos, lots-and-homes panels, and consultation panels enter from alternating
+sides. Desktop entrances travel 88 pixels over 650 ms; mobile entrances travel
+32 pixels. Each surface enters once while motion stays enabled. There is no
+automatic carousel. Manual featured-photo changes slide
 horizontally in the selected direction over 480 ms after the next image decodes.
 The outgoing image is a temporary decorative layer, removed on completion or
 interruption. Previous/next controls keep their direction even at the ends.
@@ -61,6 +64,15 @@ and screen-reader behavior. The dialog supports arrow keys, Escape and focus
 restoration. Native details/summary use short interruptible height transitions.
 Mobile menu closure moves focus to a visible destination. The map loads on
 request, with an external viewer fallback and a normal embed without JavaScript.
+
+Scroll entrances use IntersectionObserver and CSS transform/opacity transitions.
+Section boundaries clip the movement without creating page-wide horizontal
+scrollbars, with room for keyboard focus rings. Focusing a control inside an
+entering surface immediately makes that surface visible. Gallery filters and
+expansion register newly displayed photos. Turning motion off shows every
+surface immediately; enabling it keeps on-screen content stable and prepares
+off-screen surfaces for their next entrance. JavaScript-disabled browsing or an
+unsupported observer API leaves content visible.
 
 System reduced-motion preferences disable animation, including live preference
 changes. The footer control can override motion for the current visit. Core
