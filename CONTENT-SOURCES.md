@@ -64,6 +64,21 @@ The photos are downloaded to `assets/` so the Cloudflare site does not depend on
 
 Although the original collage source has a `.png` extension, the GoDaddy image service returned JPEG bytes when resized; the local file uses the correct `.jpg` extension.
 
+## Owner-provided interior photographs
+
+On October 21, 2026, the owner supplied six additional interior photographs in `New Photos.zip`. They are added before the existing gallery, which remains intact. Captions describe visible spaces rather than claiming property names, addresses, or availability.
+
+| Local asset | Uploaded filename | Subject |
+| --- | --- | --- |
+| `project-16.webp` | `17-4121 (17).jpg` | Open living room and adjoining kitchen |
+| `project-17.webp` | `22-4121 (22).jpg` | White kitchen, wood island, and upholstered stools |
+| `project-18.webp` | `19-4121 (19).jpg` | Stone fireplace and arched display alcoves |
+| `project-19.webp` | `1-4121 (1).jpg` | Entryway, glass front door, and console table |
+| `project-20.webp` | `11-4121 (11).jpg` | Double vanity and glass-enclosed shower |
+| `project-21.webp` | `20-4121 (20).jpg` | Living room viewed from the kitchen |
+
+Each photograph has a 1600 × 900 WebP and an 800 × 450 `-800.webp` variant. Responsive image selection, lazy loading, and asynchronous decoding keep the gallery lightweight. The photographs were resized and compressed without retouching; embedded photographer copyright metadata is preserved. The uploaded ZIP is not part of the public site.
+
 ## Contact and external services
 
 The original GoDaddy form and attachment upload depended on GoDaddy services. This frontend uses direct email and telephone links. The consultation link explicitly opens the visitor's email app and does not claim that a message was submitted. No form backend, attachment upload, advertising cookies or analytics were added. Google Maps and social networks are accessed through clearly identified external links.

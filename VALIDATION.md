@@ -1,6 +1,15 @@
 # Validation record
 
-Latest verification: October 13, 2026 in the supplied development environment.
+Latest verification: October 21, 2026 in the supplied development environment.
+
+## Additional interior photographs — October 21, 2026
+
+- Added six owner-supplied interior photos before the existing gallery. All 15 original entries remain unchanged and in their latest order; the newer homepage, carousel, contact Worker, and other site updates are preserved.
+- All seven targeted browser checks pass: new-photo order, image decoding, filters/expansion, keyboard photo viewing and focus return, desktop/mobile layouts, JavaScript-disabled links, and runtime/asset errors.
+- Counts agree at 21 total photos, 15 interiors, two exteriors, and four commercial images. The six new photos appear initially, and expansion still exposes the complete gallery.
+- All six 1600 × 900 WebPs and six 800 × 450 responsive variants decode. Mobile selects the smaller files. The full-size set totals 882,922 bytes, approximately 73% below the uploaded JPEGs; the small set totals 297,536 bytes, approximately 91% below them. Copyright metadata remains present.
+- Desktop and 390/320-pixel mobile gallery screenshots and the new-photo viewer were reviewed. New captions, alt text, responsive image selection, and native image links work without introducing application dependencies.
+- The complete build passes source/output validation, 20 contact tests and seven generated-Worker tests. JavaScript syntax and Git whitespace checks pass. Browser/preview processes were stopped; no real contact messages were sent. Google's external map was blocked during local browser checks rather than tested live.
 
 ## Current light homepage refresh
 
